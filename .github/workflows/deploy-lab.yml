@@ -24,6 +24,38 @@ jobs:
           test -f index.html
           test -f details.html
           test -f .nojekyll
+          test -f assets/avatars/phoenix-main.svg
+          test -f assets/avatars/phoenix-activite.svg
+          test -f assets/avatars/phoenix-sommeil.svg
+          test -f assets/avatars/phoenix-nutrition.svg
+          test -f assets/avatars/phoenix-transformation.svg
+          test -f assets/avatars/phoenix-sante.svg
+          test -f assets/avatars/phoenix-journal.svg
+          test -f assets/avatars/phoenix-trophees.svg
+
+      - name: Utiliser les avatars publics hébergés dans le Lab
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          base = 'https://corvijulien-netizen.github.io/project-phoenix-lab/assets/avatars/'
+          replacements = {
+              'https://drive.google.com/thumbnail?id=1KySSI1miLsJmHx1MciwkmiwphTp1Bj9_&sz=w1000': base + 'phoenix-main.svg',
+              'https://drive.google.com/thumbnail?id=1bPj-439AcAZtTvyM-HAnJMHpg0RwIwKy&sz=w900': base + 'phoenix-activite.svg',
+              'https://drive.google.com/thumbnail?id=1CMV1xU9hnb4rxJ93MgHRpnea1JR7zqtA&sz=w900': base + 'phoenix-sommeil.svg',
+              'https://drive.google.com/thumbnail?id=1HEgg_YTRXGAObob9vlrkA_BR9v5V2ZRJ&sz=w900': base + 'phoenix-nutrition.svg',
+              'https://drive.google.com/thumbnail?id=10zZ2Tk-cRtXZyRl2aoHxZ_wtccZ13BfH&sz=w900': base + 'phoenix-transformation.svg',
+              'https://drive.google.com/thumbnail?id=1-2t1QeA_BCjfkW7tEc_fczN8cqgQq8xW&sz=w900': base + 'phoenix-sante.svg',
+              'https://drive.google.com/thumbnail?id=1_oV4qsK9rqG8VRrAzY9rPCy5vvYeJJvF&sz=w900': base + 'phoenix-journal.svg',
+              'https://drive.google.com/thumbnail?id=1bqIbDSHUfZsnCa_MP8ipLkU2eZNkxsB0&sz=w900': base + 'phoenix-trophees.svg',
+          }
+          for filename in ('index.html', 'details.html'):
+              path = Path(filename)
+              text = path.read_text(encoding='utf-8')
+              for old, new in replacements.items():
+                  text = text.replace(old, new)
+              path.write_text(text, encoding='utf-8')
+          PY
 
       - name: Publier Phoenix Lab sur GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
