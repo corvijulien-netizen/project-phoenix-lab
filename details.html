@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#111827">
+<title>Project Phoenix Lab — Chargement</title>
+<style>
+html,body{height:100%;margin:0;background:#080c13;color:#fff;font-family:Inter,system-ui,sans-serif}.loading{height:100%;display:grid;place-items:center;text-align:center;padding:30px}.loading b{display:block;font-size:24px;margin-bottom:8px}.loading span{color:#94a3b8}.spinner{width:38px;height:38px;margin:0 auto 18px;border:4px solid #253148;border-top-color:#38bdf8;border-radius:50%;animation:spin .8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="loading"><div><div class="spinner"></div><b>Chargement de Phoenix Lab</b><span>Ouverture de la rubrique de test…</span></div></div>
+<script>
+(async()=>{
+  const officialBase='https://corvijulien-netizen.github.io/project-phoenix/';
+  const labBase='https://corvijulien-netizen.github.io/project-phoenix-lab/';
+  try{
+    const response=await fetch('https://raw.githubusercontent.com/corvijulien-netizen/project-phoenix/main/details.html',{cache:'no-store'});
+    if(!response.ok)throw new Error('Chargement impossible');
+    let html=await response.text();
+    const labStyle=`<style>
+      .phoenix-lab-banner{position:relative;z-index:9999;display:flex;align-items:center;justify-content:center;gap:17px;flex-wrap:wrap;padding:10px 16px;background:linear-gradient(90deg,#6d28d9,#2563eb,#0891b2);color:#fff;border-bottom:1px solid rgba(255,255,255,.22);box-shadow:0 8px 24px rgba(0,0,0,.25);font:700 12px/1.35 Inter,system-ui,sans-serif;text-align:center}.phoenix-lab-banner strong{letter-spacing:.08em}.phoenix-lab-banner span{font-weight:500;opacity:.9}.phoenix-lab-banner a{padding:7px 11px;border-radius:999px;background:rgba(255,255,255,.16);color:#fff!important;text-decoration:none;border:1px solid rgba(255,255,255,.22)}.phoenix-lab-banner a:hover{background:rgba(255,255,255,.25)}@media(max-width:700px){.phoenix-lab-banner{gap:6px;padding:9px 10px}.phoenix-lab-banner span{width:100%}}
+    </style>`;
+    const banner=`<div class="phoenix-lab-banner"><strong>🧪 VERSION LAB — SITE DE TEST</strong><span>Cette rubrique est en cours de développement.</span><a href="${officialBase}">Voir le site officiel →</a></div>`;
+    html=html.replace('<head>','<head><base href="'+officialBase+'">');
+    html=html.replace('</head>',labStyle+'</head>');
+    html=html.replace('<body>','<body>'+banner);
+    html=html.replace(/<title>Project Phoenix/g,'<title>LAB — Project Phoenix');
+    html=html.replaceAll('href="details.html','href="'+labBase+'details.html');
+    html=html.replaceAll("href='details.html","href='"+labBase+'details.html');
+    html=html.replaceAll('href="index.html','href="'+labBase+'index.html');
+    html=html.replaceAll("href='index.html","href='"+labBase+'index.html');
+    document.open();document.write(html);document.close();
+  }catch(error){
+    document.body.innerHTML='<div class="loading"><div><b>Phoenix Lab indisponible</b><span>'+error.message+'</span></div></div>';
+  }
+})();
+</script>
+</body>
+</html>
