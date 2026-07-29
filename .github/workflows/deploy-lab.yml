@@ -16,42 +16,21 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Copier la version officielle
+      - name: Récupérer Phoenix Lab
+        uses: actions/checkout@v4
+
+      - name: Vérifier les fichiers essentiels
         run: |
-          git clone --depth 1 https://github.com/corvijulien-netizen/project-phoenix.git site
-          rm -rf site/.git site/.github
+          test -f index.html
+          test -f details.html
+          test -f .nojekyll
 
-      - name: Identifier clairement la version Lab
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-
-          banner = '''<div class="phoenix-lab-banner" role="status">
-            <strong>🧪 VERSION LAB — SITE DE TEST</strong>
-            <span>Les éléments affichés ici sont en cours de développement et ne modifient pas le site officiel.</span>
-            <a href="https://corvijulien-netizen.github.io/project-phoenix/">Voir le site officiel →</a>
-          </div>'''
-
-          style = '''<style>
-          .phoenix-lab-banner{position:relative;z-index:1000;display:flex;align-items:center;justify-content:center;gap:18px;flex-wrap:wrap;padding:11px 18px;background:linear-gradient(90deg,#6d28d9,#2563eb,#0891b2);color:#fff;border-bottom:1px solid rgba(255,255,255,.22);box-shadow:0 8px 24px rgba(0,0,0,.22);font:700 12px/1.35 Inter,system-ui,sans-serif;text-align:center}.phoenix-lab-banner strong{letter-spacing:.08em}.phoenix-lab-banner span{font-weight:500;opacity:.9}.phoenix-lab-banner a{padding:7px 11px;border-radius:999px;background:rgba(255,255,255,.16);color:#fff;text-decoration:none;border:1px solid rgba(255,255,255,.2)}.phoenix-lab-banner a:hover{background:rgba(255,255,255,.25)}@media(max-width:700px){.phoenix-lab-banner{gap:7px;padding:9px 12px}.phoenix-lab-banner span{width:100%}}
-          </style>'''
-
-          for filename in ('index.html', 'details.html'):
-              path = Path('site') / filename
-              text = path.read_text(encoding='utf-8')
-              text = text.replace('</head>', style + '\n</head>', 1)
-              text = text.replace('<body>', '<body>\n' + banner, 1)
-              text = text.replace('<title>Project Phoenix', '<title>LAB — Project Phoenix', 1)
-              path.write_text(text, encoding='utf-8')
-
-          Path('site/.nojekyll').touch()
-          PY
-
-      - name: Publier sur la branche gh-pages
+      - name: Publier Phoenix Lab sur GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./site
+          publish_dir: .
           publish_branch: gh-pages
           force_orphan: true
-          commit_message: "Publier la version Lab depuis le site officiel"
+          exclude_assets: '.github,node_modules,.git'
+          commit_message: "Déployer Phoenix Lab enrichi"
