@@ -1,11 +1,13 @@
-const CACHE='phoenix-lab-v3';
+const CACHE='phoenix-lab-v4';
 const ROOT='/project-phoenix-lab/';
 const STATIC=[
   ROOT,
   ROOT+'index.html',
   ROOT+'details.html',
-  ROOT+'lab.css?v=2',
-  ROOT+'lab.js?v=2',
+  ROOT+'ideas.html',
+  ROOT+'lab.css?v=3',
+  ROOT+'lab.js?v=3',
+  ROOT+'pwa.js?v=1',
   ROOT+'manifest.webmanifest',
   ROOT+'assets/avatars/phoenix-main.svg',
   ROOT+'assets/avatars/phoenix-activite.svg',
