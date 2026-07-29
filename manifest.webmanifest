@@ -1,0 +1,19 @@
+{
+  "name": "Project Phoenix Lab",
+  "short_name": "Phoenix Lab",
+  "description": "Version expérimentale du tableau de bord Project Phoenix.",
+  "start_url": "/project-phoenix-lab/",
+  "scope": "/project-phoenix-lab/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#07101f",
+  "theme_color": "#080c13",
+  "icons": [
+    {
+      "src": "/project-phoenix-lab/assets/avatars/phoenix-main.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
