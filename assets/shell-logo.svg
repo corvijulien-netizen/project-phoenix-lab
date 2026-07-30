@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">Coquille Saint-Jacques dorée</title>
+  <desc id="desc">Emblème patiné inspiré des coquilles en bronze qui balisent le chemin de Compostelle.</desc>
+  <defs>
+    <linearGradient id="gold" x1=".12" y1=".06" x2=".84" y2=".95">
+      <stop offset="0" stop-color="#6f4a14"/>
+      <stop offset=".18" stop-color="#b78834"/>
+      <stop offset=".4" stop-color="#f0d17c"/>
+      <stop offset=".58" stop-color="#9c6b21"/>
+      <stop offset=".78" stop-color="#d6aa4b"/>
+      <stop offset="1" stop-color="#65400f"/>
+    </linearGradient>
+    <radialGradient id="shine" cx=".38" cy=".28" r=".82">
+      <stop offset="0" stop-color="#fff1ae" stop-opacity=".82"/>
+      <stop offset=".34" stop-color="#d8aa4b" stop-opacity=".3"/>
+      <stop offset="1" stop-color="#4f300b" stop-opacity=".42"/>
+    </radialGradient>
+    <filter id="patina" x="-12%" y="-12%" width="124%" height="124%">
+      <feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="3" seed="12" result="noise"/>
+      <feColorMatrix in="noise" type="saturate" values="0" result="mono"/>
+      <feBlend in="SourceGraphic" in2="mono" mode="soft-light" result="textured"/>
+      <feDropShadow dx="0" dy="9" stdDeviation="8" flood-color="#382006" flood-opacity=".32"/>
+    </filter>
+    <clipPath id="shellClip">
+      <path d="M256 461C189 460 104 425 72 352c-29-66-17-151 24-216 17-27 40-54 69-60 19-4 34 4 45 17 12-19 29-30 46-30s34 11 46 30c11-13 26-21 45-17 29 6 52 33 69 60 41 65 53 150 24 216-32 73-117 108-184 109Z"/>
+    </clipPath>
+  </defs>
+
+  <g filter="url(#patina)">
+    <path d="M256 461C189 460 104 425 72 352c-29-66-17-151 24-216 17-27 40-54 69-60 19-4 34 4 45 17 12-19 29-30 46-30s34 11 46 30c11-13 26-21 45-17 29 6 52 33 69 60 41 65 53 150 24 216-32 73-117 108-184 109Z" fill="url(#gold)" stroke="#5b390e" stroke-width="8" stroke-linejoin="round"/>
+    <path d="M256 451C194 448 117 416 87 347c-26-59-14-137 23-196 19-30 40-52 62-57 16-3 29 6 38 20 13-24 29-36 46-36s33 12 46 36c9-14 22-23 38-20 22 5 43 27 62 57 37 59 49 137 23 196-30 69-107 101-169 104Z" fill="url(#shine)" opacity=".8"/>
+
+    <g clip-path="url(#shellClip)" fill="none" stroke-linecap="round">
+      <path d="M256 449 256 78" stroke="#5e3b10" stroke-width="15"/>
+      <path d="M256 449 210 94" stroke="#684311" stroke-width="13"/>
+      <path d="M256 449 168 83" stroke="#67420f" stroke-width="13"/>
+      <path d="M256 449 129 103" stroke="#65400f" stroke-width="12"/>
+      <path d="M256 449 96 153" stroke="#65400f" stroke-width="12"/>
+      <path d="M256 449 77 222" stroke="#65400f" stroke-width="11"/>
+      <path d="M256 449 302 94" stroke="#684311" stroke-width="13"/>
+      <path d="M256 449 344 83" stroke="#67420f" stroke-width="13"/>
+      <path d="M256 449 383 103" stroke="#65400f" stroke-width="12"/>
+      <path d="M256 449 416 153" stroke="#65400f" stroke-width="12"/>
+      <path d="M256 449 435 222" stroke="#65400f" stroke-width="11"/>
+
+      <path d="M256 441 256 88" stroke="#f7dc88" stroke-opacity=".48" stroke-width="3"/>
+      <path d="M256 441 210 104" stroke="#f5d47d" stroke-opacity=".42" stroke-width="3"/>
+      <path d="M256 441 168 94" stroke="#f5d47d" stroke-opacity=".4" stroke-width="3"/>
+      <path d="M256 441 129 114" stroke="#efd078" stroke-opacity=".38" stroke-width="3"/>
+      <path d="M256 441 96 164" stroke="#efd078" stroke-opacity=".34" stroke-width="3"/>
+      <path d="M256 441 302 104" stroke="#f5d47d" stroke-opacity=".42" stroke-width="3"/>
+      <path d="M256 441 344 94" stroke="#f5d47d" stroke-opacity=".4" stroke-width="3"/>
+      <path d="M256 441 383 114" stroke="#efd078" stroke-opacity=".38" stroke-width="3"/>
+      <path d="M256 441 416 164" stroke="#efd078" stroke-opacity=".34" stroke-width="3"/>
+    </g>
+
+    <path d="M174 394c28 31 55 48 82 50 27-2 54-19 82-50" fill="none" stroke="#52310b" stroke-opacity=".75" stroke-width="9" stroke-linecap="round"/>
+    <path d="M187 392c23 25 46 38 69 40 23-2 46-15 69-40" fill="none" stroke="#f0cd72" stroke-opacity=".38" stroke-width="3" stroke-linecap="round"/>
+  </g>
+</svg>
