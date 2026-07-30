@@ -11,3 +11,10 @@
 @media(max-width:1000px){.lab-command-grid{grid-template-columns:1fr}.lab-insights{grid-template-columns:1fr 1fr}.lab-year-map{grid-template-columns:repeat(31,minmax(5px,1fr))}.detailHero{padding-right:24px!important;padding-bottom:315px!important}.lab-detail-avatar{left:24px;right:24px;top:auto;bottom:18px;width:auto;height:280px}}
 @media(max-width:700px){.labbar span{display:none}.lab-pulse{grid-template-columns:72px 1fr}.lab-pulse img{width:72px}.lab-pulse-score{display:none}.lab-focus{grid-template-columns:1fr}.lab-topic-avatar{height:145px}.phoenixCard>img{width:135%!important}.summaryGrid{grid-template-columns:1fr!important}.topic{min-height:auto!important}.lab-command{padding:18px;margin-left:-2px;margin-right:-2px}.lab-command-head{display:block}.lab-day-badge{display:inline-flex;margin-top:10px}.lab-year-map{grid-template-columns:repeat(20,minmax(6px,1fr));gap:4px}.lab-insights{grid-template-columns:1fr}.lab-story{grid-template-columns:64px 1fr}.lab-story img{width:64px;height:64px}.lab-analysis{grid-template-columns:70px 1fr}.lab-analysis img{width:70px}.lab-detail-avatar{height:250px}.lab-context{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){.phoenixCard>img,.phoenixCard:before,.lab-focus i,.lab-detail-avatar img{animation:none!important}.lab-reveal{opacity:1;transform:none}}
+/* Navigation Phoenix Lab : même disposition verticale à gauche que le site officiel. */
+@media(min-width:1101px){
+  .app-shell{display:grid!important;grid-template-columns:86px minmax(0,1fr)!important;gap:18px!important;width:min(1280px,calc(100% - 24px))!important;margin:0 auto!important}
+  .phoenix-side-nav{display:grid!important;position:sticky!important;left:auto!important;right:auto!important;top:112px!important;width:86px!important;height:max-content!important;margin-top:16px!important;padding:10px 8px!important;grid-template-columns:1fr!important;gap:5px!important}
+  .phoenix-side-nav a{min-height:62px!important;padding:7px 4px!important;display:grid!important;place-items:center!important;gap:2px!important;text-align:center!important}
+  .phoenix-mobile-nav{display:none!important}
+}
