@@ -18,3 +18,7 @@
   .phoenix-side-nav a{min-height:62px!important;padding:7px 4px!important;display:grid!important;place-items:center!important;gap:2px!important;text-align:center!important}
   .phoenix-mobile-nav{display:none!important}
 }
+
+/* En-tête horizontal masqué : la navigation est déjà disponible dans la barre latérale (et en bas sur mobile). */
+body > header.wrap.nav{display:none!important}
+@media(min-width:1101px){.phoenix-side-nav{top:16px!important}}
