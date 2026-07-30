@@ -93,11 +93,20 @@ a:focus-visible {
 }
 
 .brand-mark {
-  display: block;
+  position: relative;
+  display: grid;
   width: 67px;
   min-width: 67px;
   height: 67px;
-  filter: drop-shadow(0 4px 5px rgba(78, 49, 13, .2));
+  place-items: center;
+  border: 1px solid rgba(83, 88, 53, .38);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 35% 27%, rgba(255,255,255,.16), transparent 26%),
+    linear-gradient(145deg, #7c8355, #545c37);
+  box-shadow:
+    inset 0 0 0 4px rgba(248, 239, 218, .17),
+    0 5px 11px rgba(63, 49, 23, .18);
 }
 
 .brand-mark img,
@@ -106,6 +115,12 @@ a:focus-visible {
   width: 100%;
   height: 100%;
   object-fit: contain;
+}
+
+.brand-mark img {
+  width: 79%;
+  height: 79%;
+  filter: drop-shadow(0 3px 3px rgba(31, 27, 12, .35));
 }
 
 .brand-mark svg,
@@ -306,11 +321,28 @@ h1 {
   text-transform: uppercase;
 }
 
-.subtitle {
-  margin: 12px 0 0;
-  color: var(--muted);
+.subtitle,
+.camino-motto {
+  margin: 11px 0 0;
+  color: #72624b;
   font-family: var(--serif);
-  font-size: 17px;
+  font-size: 18px;
+}
+
+.camino-motto {
+  position: relative;
+  padding-left: 47px;
+  font-style: italic;
+}
+
+.camino-motto::before {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 34px;
+  height: 1px;
+  background: var(--terracotta);
+  content: "";
 }
 
 .topbar-status {
@@ -360,6 +392,65 @@ h1 {
   display: grid;
   grid-template-columns: minmax(0, 2.42fr) minmax(300px, .98fr);
   gap: 17px;
+}
+
+.pilgrim-note {
+  position: relative;
+  display: grid;
+  max-width: 1050px;
+  grid-template-columns: 68px minmax(0, 1fr);
+  align-items: center;
+  gap: 20px;
+  margin: 18px auto 0;
+  padding: 16px 29px 17px 21px;
+  overflow: hidden;
+  border: 1px solid rgba(132, 103, 64, .22);
+  border-radius: 12px;
+  background:
+    linear-gradient(93deg, rgba(111, 120, 74, .11), transparent 35%),
+    rgba(250, 245, 234, .72);
+  box-shadow: 0 8px 24px rgba(71, 47, 18, .06);
+}
+
+.pilgrim-note::after {
+  position: absolute;
+  right: 23px;
+  bottom: 11px;
+  width: 88px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(180, 73, 25, .32));
+  content: "";
+}
+
+.pilgrim-note-shell {
+  display: grid;
+  width: 62px;
+  height: 62px;
+  place-items: center;
+  border: 1px solid rgba(93, 99, 58, .28);
+  border-radius: 50%;
+  background: rgba(104, 113, 68, .12);
+}
+
+.pilgrim-note-shell img {
+  width: 46px;
+  height: 46px;
+  object-fit: contain;
+  filter: drop-shadow(0 3px 3px rgba(72, 48, 16, .22));
+}
+
+.pilgrim-note .section-kicker {
+  margin-bottom: 3px;
+  font-size: 13px;
+}
+
+.pilgrim-note p:last-child {
+  max-width: 850px;
+  margin: 0;
+  color: #514a3d;
+  font-family: var(--serif);
+  font-size: 16px;
+  line-height: 1.48;
 }
 
 .map-card,
@@ -677,8 +768,8 @@ h1 {
   display: flex;
   min-width: 292px;
   flex-direction: column;
-  gap: 6px;
-  padding: 17px 21px 15px;
+  gap: 7px;
+  padding: 17px 21px 16px;
   border: 1px solid rgba(125, 91, 49, .38);
   border-radius: 10px;
   color: var(--ink);
@@ -1582,19 +1673,6 @@ h1 {
   letter-spacing: .1em;
 }
 
-.credential-motto {
-  position: absolute;
-  bottom: 19px;
-  left: 27px;
-  max-width: 145px;
-  margin: 0;
-  color: #887862;
-  font-family: var(--serif);
-  font-size: 10px;
-  font-style: italic;
-  line-height: 1.25;
-}
-
 .credential-stamp-page {
   display: flex;
   flex-direction: column;
@@ -2374,11 +2452,6 @@ blockquote {
     height: 100px;
   }
 
-  .credential-motto {
-    left: 18px;
-    max-width: 115px;
-  }
-
   .credential-grid .stamp-slot {
     min-height: 82px;
   }
@@ -2406,9 +2479,18 @@ blockquote {
     letter-spacing: .04em;
   }
 
-  .subtitle {
+.subtitle,
+  .camino-motto {
     max-width: 250px;
     font-size: 14px;
+  }
+
+  .camino-motto {
+    padding-left: 36px;
+  }
+
+  .camino-motto::before {
+    width: 26px;
   }
 
   .topbar-status {
@@ -2514,6 +2596,27 @@ blockquote {
   .stage-card {
     display: flex;
     padding: 20px 17px 14px;
+  }
+
+  .pilgrim-note {
+    grid-template-columns: 48px minmax(0, 1fr);
+    gap: 13px;
+    padding: 14px 16px 15px 13px;
+  }
+
+  .pilgrim-note-shell {
+    width: 46px;
+    height: 46px;
+  }
+
+  .pilgrim-note-shell img {
+    width: 35px;
+    height: 35px;
+  }
+
+  .pilgrim-note p:last-child {
+    font-size: 14px;
+    line-height: 1.42;
   }
 
   .stage-card h2 {
