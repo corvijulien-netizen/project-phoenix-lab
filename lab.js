@@ -3,259 +3,357 @@
 
   const cfg=window.PHOENIX_LAB||{};
   const assets=cfg.assets||{};
-  const phoenix=window.PHOENIX;
-  if(!phoenix||document.documentElement.dataset.phoenixLabPremium)return;
-  document.documentElement.dataset.phoenixLabPremium='true';
+  const P=window.PHOENIX;
+  if(!P||document.documentElement.dataset.phoenixLabV9)return;
+  document.documentElement.dataset.phoenixLabV9='true';
 
-  const latest=phoenix.history?.[phoenix.history.length-1]||{};
-  const number0=n=>new Intl.NumberFormat('fr-FR',{maximumFractionDigits:0}).format(Number(n)||0);
-  const number1=n=>new Intl.NumberFormat('fr-FR',{minimumFractionDigits:1,maximumFractionDigits:1}).format(Number(n)||0);
-  const number2=n=>new Intl.NumberFormat('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2}).format(Number(n)||0);
-  const clamp=(n,min,max)=>Math.min(max,Math.max(min,n));
-  const sleepText=h=>{if(h==null)return 'En attente';const m=Math.round(h*60);return `${Math.floor(m/60)} h ${String(m%60).padStart(2,'0')}`};
+  const history=Array.isArray(P.history)?P.history:[];
+  const D=history[history.length-1]||{};
+  const project=P.project||{};
+  const profile=P.profile||{};
+  const totalDays=Number(project.totalDays)||365;
+  const currentDay=Number(project.day)||1;
+  const challengePct=Math.max(.27,Math.min(100,currentDay/totalDays*100));
+  const startWeight=Number(profile.startWeightKg)||Number(D.weightKg)||0;
+  const goalWeight=Number(profile.goalWeightKg)||80;
+  const currentWeight=Number(D.weightKg)||startWeight;
+  const weightLost=Math.max(0,startWeight-currentWeight);
+  const totalToLose=Math.max(.1,startWeight-goalWeight);
+  const weightPct=Math.max(0,Math.min(100,weightLost/totalToLose*100));
 
-  function injectPremiumLayout(){
-    if(document.querySelector('#phoenix-premium-layout'))return;
-    const style=document.createElement('style');
-    style.id='phoenix-premium-layout';
-    style.textContent=`
-      /* Phoenix Lab V8 — grand écran, navigation forte, un seul avatar */
-      html{scroll-behavior:smooth}
-      body{overflow-x:hidden;background:radial-gradient(circle at 5% 8%,rgba(65,146,255,.13),transparent 28%),radial-gradient(circle at 92% 3%,rgba(157,112,255,.10),transparent 24%),#07101f!important}
-      body>header.wrap.nav{display:none!important}
+  const n0=value=>new Intl.NumberFormat('fr-FR',{maximumFractionDigits:0}).format(Number(value)||0);
+  const n1=value=>new Intl.NumberFormat('fr-FR',{minimumFractionDigits:1,maximumFractionDigits:1}).format(Number(value)||0);
+  const n2=value=>new Intl.NumberFormat('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2}).format(Number(value)||0);
+  const hm=hours=>{
+    if(hours==null)return 'En attente';
+    const minutes=Math.round(Number(hours)*60);
+    return `${Math.floor(minutes/60)} h ${String(minutes%60).padStart(2,'0')}`;
+  };
+  const clamp=(value,min,max)=>Math.min(max,Math.max(min,value));
+  const q=(selector,root=document)=>root.querySelector(selector);
+  const qa=(selector,root=document)=>[...root.querySelectorAll(selector)];
 
-      .lab-topic-avatar,.navAvatar,.lab-pulse>img,.lab-story>img,.lab-insight img,.lab-analysis>img,.lab-detail-avatar{display:none!important}
-      .topic .lab-topic-avatar{display:none!important}
-
-      .phoenixCard{position:relative!important;overflow:hidden!important;min-height:560px!important;padding:22px 22px 26px!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:flex-start!important;background:radial-gradient(circle at 50% 20%,rgba(71,157,255,.22),transparent 42%),linear-gradient(155deg,rgba(19,40,74,.96),rgba(8,19,38,.98))!important;border:1px solid rgba(111,167,255,.22)!important;box-shadow:0 30px 75px rgba(0,0,0,.38)!important}
-      .phoenixCard:before{display:block!important;content:""!important;position:absolute!important;inset:-35%!important;background:radial-gradient(circle,rgba(92,168,255,.17),transparent 58%)!important;animation:labPulse 7s ease-in-out infinite!important;pointer-events:none!important}
-      .phoenixCard>img,.phoenixCard>.lab-main-avatar{display:block!important;position:relative!important;z-index:2!important;width:min(100%,330px)!important;height:auto!important;aspect-ratio:1/1.08!important;object-fit:cover!important;object-position:center 18%!important;margin:0 auto!important;border-radius:27px!important;border:3px solid rgba(255,255,255,.10)!important;filter:drop-shadow(0 24px 34px rgba(0,0,0,.42))!important;box-shadow:0 0 0 1px rgba(103,172,255,.18),0 25px 60px rgba(0,0,0,.28)!important;animation:labFloat 5.4s ease-in-out infinite!important}
-      .auren-profile{position:relative!important;z-index:3!important;width:100%!important;padding:22px 8px 3px!important;text-align:center!important}
-      .auren-profile .auren-role{display:block!important;color:#58dcf4!important;font-size:10px!important;font-weight:900!important;letter-spacing:.15em!important;text-transform:uppercase!important}
-      .auren-profile h2{margin:8px 0 10px!important;font-size:38px!important;line-height:1!important;letter-spacing:-.04em!important}
-      .auren-profile p{max-width:340px!important;margin:0 auto!important;color:#b7c5d9!important;font-size:13px!important;line-height:1.65!important}
-
-      .lab-pulse{grid-template-columns:minmax(0,1fr) auto!important}
-      .lab-story{grid-template-columns:1fr!important}
-      .lab-insight-top{justify-content:flex-end!important}
-      .lab-analysis{grid-template-columns:1fr!important}
-      .detailHero{min-height:0!important;padding-right:24px!important;padding-bottom:24px!important}
-      .topic{min-height:0!important}
-
-      @media(min-width:1101px){
-        .app-shell{display:grid!important;grid-template-columns:clamp(250px,18vw,325px) minmax(0,1fr)!important;gap:clamp(24px,2vw,38px)!important;width:100%!important;max-width:none!important;margin:0!important;padding:0 clamp(22px,2.4vw,46px) 90px!important;align-items:start!important}
-        .app-shell>main,.app-shell>.content,.app-shell>.app-main,.app-shell>div:not(.phoenix-side-nav){min-width:0!important;width:100%!important;max-width:none!important}
-        .phoenix-side-nav{display:grid!important;position:sticky!important;left:auto!important;right:auto!important;top:16px!important;width:100%!important;min-width:0!important;min-height:calc(100vh - 32px)!important;max-height:calc(100vh - 32px)!important;height:auto!important;margin:16px 0 0!important;padding:20px 16px!important;grid-template-columns:1fr!important;align-content:start!important;gap:8px!important;overflow:auto!important;border-radius:28px!important;background:linear-gradient(180deg,rgba(15,31,58,.96),rgba(8,20,40,.97))!important;border:1px solid rgba(122,166,225,.18)!important;box-shadow:0 28px 70px rgba(0,0,0,.34)!important}
-        .phoenix-side-nav:before{content:"PROJECT PHOENIX";display:block;padding:9px 12px 17px;margin-bottom:4px;border-bottom:1px solid rgba(143,170,213,.14);color:#7fdcf1;font-size:10px;font-weight:900;letter-spacing:.16em;text-align:center}
-        .phoenix-side-nav a{min-height:64px!important;padding:9px 12px!important;display:grid!important;grid-template-columns:46px minmax(0,1fr)!important;place-items:center start!important;gap:12px!important;border-radius:16px!important;text-align:left!important;font-size:13px!important;transition:transform .2s ease,background .2s ease,border-color .2s ease!important}
-        .phoenix-side-nav a:hover{transform:translateX(4px)!important;background:rgba(72,139,239,.12)!important;border-color:rgba(93,160,255,.22)!important}
-        .phoenix-side-nav a.active,.phoenix-side-nav a[aria-current="page"]{background:linear-gradient(135deg,rgba(52,124,245,.21),rgba(139,99,246,.14))!important;border-color:rgba(92,159,255,.25)!important}
-        .phoenix-side-nav a .navIcon{justify-self:center!important;font-size:29px!important}
-        .phoenix-side-nav a>span:last-child{display:block!important;font-size:13px!important;line-height:1.15!important;font-weight:800!important}
-        .phoenix-mobile-nav{display:none!important}
-        .summaryGrid{grid-template-columns:minmax(300px,360px) minmax(0,1fr)!important;gap:24px!important;align-items:start!important}
-        .hero,.section,.lab-command,.lab-pulse,.lab-focus{width:100%!important;max-width:none!important}
-      }
-
-      @media(min-width:1500px){
-        .app-shell{grid-template-columns:340px minmax(0,1fr)!important;padding-left:42px!important;padding-right:42px!important}
-        .phoenixCard{min-height:620px!important}
-        .phoenixCard>img,.phoenixCard>.lab-main-avatar{width:350px!important}
-      }
-
-      @media(max-width:1100px){
-        .phoenixCard{min-height:auto!important}
-        .phoenixCard>img,.phoenixCard>.lab-main-avatar{width:min(100%,280px)!important}
-      }
-
-      @media(max-width:700px){
-        .phoenixCard{padding:16px!important}
-        .phoenixCard>img,.phoenixCard>.lab-main-avatar{width:min(100%,230px)!important;border-radius:22px!important}
-        .auren-profile h2{font-size:30px!important}
-      }
-    `;
-    document.head.append(style);
+  function replaceTextEverywhere(){
+    const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);
+    const nodes=[];
+    while(walker.nextNode())nodes.push(walker.currentNode);
+    nodes.forEach(node=>{
+      const value=node.nodeValue||'';
+      if(value.includes('Phoenix IA'))node.nodeValue=value.replace(/Phoenix IA/g,'Auren');
+    });
+    document.title=document.title.replace('Expérience augmentée','Expérience ultime');
   }
 
-  function createImage(key,alt,lazy=true){
-    const image=document.createElement('img');
-    image.alt=alt;
-    image.decoding='async';
-    if(lazy)image.loading='lazy';
-    image.src=assets[key]||`${cfg.officialBase||''}phoenix.svg`;
-    image.onerror=()=>{image.onerror=null;image.src=`${cfg.officialBase||''}phoenix.svg`};
-    return image;
+  function addScrollProgress(){
+    if(q('.px-scroll-progress'))return;
+    const bar=document.createElement('div');
+    bar.className='px-scroll-progress';
+    bar.setAttribute('aria-hidden','true');
+    document.body.prepend(bar);
+    const update=()=>{
+      const max=document.documentElement.scrollHeight-innerHeight;
+      bar.style.width=`${max>0?scrollY/max*100:0}%`;
+    };
+    addEventListener('scroll',update,{passive:true});
+    addEventListener('resize',update,{passive:true});
+    update();
   }
 
-  function keepOnlyMainAvatar(){
-    document.querySelectorAll('.lab-topic-avatar,.navAvatar').forEach(node=>node.remove());
-    document.querySelectorAll('.topic img[src*="assets/avatars/"],.phoenix-side-nav img[src*="assets/avatars/"]').forEach(node=>node.remove());
+  function ensureMainAvatar(){
+    qa('.lab-topic-avatar,.navAvatar,.lab-detail-avatar').forEach(node=>node.remove());
+    qa('.topic img[src*="assets/avatars/"],.phoenix-side-nav img[src*="assets/avatars/"]').forEach(node=>node.remove());
 
-    const card=document.querySelector('.phoenixCard');
+    const card=q('.phoenixCard');
     if(!card)return;
-
-    let image=card.querySelector(':scope>img');
+    qa(':scope>img',card).slice(1).forEach(node=>node.remove());
+    let image=q(':scope>img',card);
     if(!image){
-      image=createImage('main','Auren, avatar principal de Project Phoenix',false);
+      image=document.createElement('img');
       card.prepend(image);
     }
-    if(assets.main)image.src=assets.main;
     image.className='lab-main-avatar';
+    image.alt='Auren, guide principal de Project Phoenix';
+    image.decoding='async';
     image.loading='eager';
     image.fetchPriority='high';
-  }
+    image.src=assets.main||`${cfg.officialBase||''}phoenix.svg`;
+    image.onerror=()=>{
+      image.onerror=null;
+      image.src=`${cfg.officialBase||''}phoenix.svg`;
+    };
 
-  function personalizeAuren(){
-    const card=document.querySelector('.phoenixCard');
-    if(!card)return;
-
-    const walker=document.createTreeWalker(card,NodeFilter.SHOW_TEXT);
-    const textNodes=[];
-    while(walker.nextNode())textNodes.push(walker.currentNode);
-    textNodes.forEach(node=>{
-      if((node.nodeValue||'').includes('Phoenix IA'))node.nodeValue=node.nodeValue.replace(/Phoenix IA/g,'Auren');
-    });
-
-    let profile=card.querySelector('.auren-profile');
-    if(!profile){
-      profile=document.createElement('div');
-      profile.className='auren-profile';
-      profile.innerHTML='<span class="auren-role">Guide officiel du challenge</span><h2>Auren</h2><p>Ton compagnon de route dans Project Phoenix. Il transforme les données en repères clairs, suit les progrès et raconte la transformation avec honnêteté.</p>';
-      const image=card.querySelector(':scope>img');
-      if(image)image.insertAdjacentElement('afterend',profile);else card.prepend(profile);
+    let profileBlock=q('.auren-profile',card);
+    if(!profileBlock){
+      profileBlock=document.createElement('div');
+      profileBlock.className='auren-profile';
+      image.insertAdjacentElement('afterend',profileBlock);
     }
+    profileBlock.innerHTML='<span class="auren-role">Guide officiel du challenge</span><h2>Auren</h2><p>Il transforme les données en repères clairs, protège l’honnêteté du suivi et raconte chaque étape de la reconstruction.</p>';
   }
 
-  function revealOnScroll(){
-    const nodes=document.querySelectorAll('.topic,.lab-pulse,.lab-focus,.lab-command');
-    nodes.forEach(node=>node.classList.add('lab-reveal'));
-    if(!('IntersectionObserver'in window)){nodes.forEach(n=>n.classList.add('is-visible'));return;}
-    const observer=new IntersectionObserver(entries=>entries.forEach(entry=>{
-      if(entry.isIntersecting){entry.target.classList.add('is-visible');observer.unobserve(entry.target);}
-    }),{threshold:.07});
-    nodes.forEach(node=>observer.observe(node));
+  function upgradeHero(){
+    const hero=q('.hero');
+    if(!hero)return;
+    const eyebrow=q('.eyebrow',hero);
+    if(eyebrow)eyebrow.innerHTML='<i></i> Mission active · transformation publique';
+    const title=q('h1',hero);
+    if(title)title.innerHTML='365 jours pour rallumer <span>la meilleure version de moi-même.</span>';
+    const lead=q('.lead',hero);
+    if(lead)lead.innerHTML='<strong>Project Phoenix n’est pas une promesse.</strong> C’est une preuve construite jour après jour : mouvement, sommeil, corps, discipline et vérité des données.';
+    const challengeTitle=q('.challengeText h2',hero);
+    if(challengeTitle)challengeTitle.textContent=currentDay===1?'Le point zéro est enregistré. La mission commence.':`Jour ${currentDay} : la trajectoire est en mouvement.`;
+    const challengeCopy=q('.challengeText p',hero);
+    if(challengeCopy)challengeCopy.textContent='Chaque journée officielle ajoute une pièce au récit. Aucun chiffre inventé, aucune progression maquillée.';
+    const dayRing=q('.dayRing',hero);
+    if(dayRing)dayRing.style.setProperty('--px-day-progress',`${challengePct}%`);
+    const yearBar=q('.yearbar i',hero);
+    if(yearBar)yearBar.style.width=`${challengePct}%`;
+    const yearMeta=q('.yearmeta b',hero);
+    if(yearMeta)yearMeta.textContent=`${n2(challengePct)} %`;
   }
 
-  function buildPulse(){
-    const hero=document.querySelector('.hero');
-    if(!hero||document.querySelector('.lab-pulse'))return;
-    const pulse=document.createElement('section');
-    pulse.className='lab-pulse';
-    pulse.innerHTML=`<div><small>Phoenix Pulse</small><h3>Un départ très actif. La récupération devient la priorité.</h3><p>${number0(latest.steps)} pas et ${number2(latest.distanceKm)} km créent un excellent point zéro. La prochaine victoire sera une nuit régulière et une journée bien hydratée.</p></div><div class="lab-pulse-score" aria-label="Score Phoenix ${latest.score||0} sur 100">${latest.score||0}</div>`;
-    hero.insertAdjacentElement('afterend',pulse);
+  function addSidebarStatus(){
+    const nav=q('.phoenix-side-nav');
+    if(!nav||q('.px-side-status',nav))return;
+    const status=document.createElement('div');
+    status.className='px-side-status';
+    status.innerHTML=`
+      <div class="px-side-status-top"><span>Progression annuelle</span><b>${currentDay} / ${totalDays}</b></div>
+      <div class="px-side-track"><i style="width:${challengePct}%"></i></div>
+      <div class="px-side-meta"><span>${n2(challengePct)} %</span><span>Score ${n0(D.score)} / 100</span></div>
+      <div class="px-live"><i></i> Dernière donnée : ${project.lastUpdate||'mise à jour officielle'}</div>`;
+    nav.append(status);
+  }
 
-    const focus=document.createElement('div');
-    focus.className='lab-focus';
-    const activityGoal=14000;
-    const sleepGoal=7;
-    const firstTarget=110;
-    const start=phoenix.profile?.startWeightKg||latest.weightKg||115;
-    focus.innerHTML=`
-      <article><span>Objectif activité</span><b>${number0(activityGoal)} pas · ${(latest.steps||0)>=activityGoal?'dépassé':'en cours'}</b><i style="width:${clamp((latest.steps||0)/activityGoal*100,0,100)}%"></i></article>
-      <article><span>Sommeil cible</span><b>${sleepGoal} h · ${(latest.sleepHours||0)>=sleepGoal?'atteint':'à consolider'}</b><i style="width:${clamp((latest.sleepHours||0)/sleepGoal*100,0,100)}%"></i></article>
-      <article><span>Premier palier</span><b>${firstTarget} kg</b><i style="width:${clamp((start-(latest.weightKg||start))/(start-firstTarget)*100,0,100)}%"></i></article>`;
-    pulse.insertAdjacentElement('afterend',focus);
+  function chartSvg(){
+    const width=760;
+    const height=285;
+    const left=48;
+    const right=24;
+    const top=30;
+    const bottom=42;
+    const plotW=width-left-right;
+    const plotH=height-top-bottom;
+    const maxWeight=Math.max(startWeight,currentWeight,...history.map(item=>Number(item.weightKg)||0))+2;
+    const minWeight=Math.min(goalWeight,currentWeight,...history.map(item=>Number(item.weightKg)||999))-2;
+    const y=value=>top+(maxWeight-value)/(maxWeight-minWeight)*plotH;
+    const x=index=>history.length<=1?left:left+index/(history.length-1)*plotW;
+    const target=`M ${left} ${y(startWeight)} C ${left+plotW*.34} ${y(startWeight-4)} ${left+plotW*.73} ${y(goalWeight+8)} ${left+plotW} ${y(goalWeight)}`;
+    const real=history.length?history.map((item,index)=>`${index?'L':'M'} ${x(index)} ${y(Number(item.weightKg)||currentWeight)}`).join(' '):`M ${left} ${y(currentWeight)}`;
+    const dots=history.map((item,index)=>`<circle class="px-chart-dot" cx="${x(index)}" cy="${y(Number(item.weightKg)||currentWeight)}" r="7"><title>${item.date||''} : ${n1(item.weightKg)} kg</title></circle>`).join('');
+    const currentX=history.length<=1?left:x(history.length-1);
+    const currentY=y(currentWeight);
+    const bubbleX=Math.min(width-145,currentX+14);
+    const labels=[maxWeight,(maxWeight+minWeight)/2,minWeight];
+    return `
+      <svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Trajectoire du poids de ${n1(startWeight)} vers ${n1(goalWeight)} kilogrammes">
+        <defs><linearGradient id="pxLine" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#48dcf4"/><stop offset=".55" stop-color="#5da8ff"/><stop offset="1" stop-color="#9a78ff"/></linearGradient></defs>
+        ${labels.map(value=>`<line class="px-chart-grid" x1="${left}" y1="${y(value)}" x2="${width-right}" y2="${y(value)}"/><text class="px-chart-label" x="${left-8}" y="${y(value)+4}" text-anchor="end">${n0(value)} kg</text>`).join('')}
+        <path class="px-chart-target" d="${target}"/>
+        <path class="px-chart-real" d="${real}"/>
+        ${dots}
+        <circle cx="${left+plotW}" cy="${y(goalWeight)}" r="7" fill="#09172c" stroke="rgba(178,198,225,.62)" stroke-width="4"/>
+        <rect class="px-chart-bubble" x="${bubbleX}" y="${Math.max(3,currentY-35)}" width="124" height="29" rx="8"/>
+        <text class="px-chart-bubble-text" x="${bubbleX+62}" y="${Math.max(3,currentY-35)+19}" text-anchor="middle">${n1(currentWeight)} kg · actuel</text>
+        <text class="px-chart-label" x="${left}" y="${height-8}">${(project.start||D.date||'').split('-').reverse().join('/')}</text>
+        <text class="px-chart-label" x="${width-right}" y="${height-8}" text-anchor="end">Objectif ${n1(goalWeight)} kg</text>
+      </svg>`;
   }
 
   function yearMap(){
-    const total=phoenix.project?.totalDays||365;
-    const current=phoenix.project?.day||1;
-    const map=document.createElement('div');
-    map.className='lab-year-map';
-    map.setAttribute('role','img');
-    map.setAttribute('aria-label',`${current} jour suivi sur ${total}`);
-    for(let day=1;day<=total;day++){
-      const cell=document.createElement('i');
-      cell.className=`lab-day${day<=current?' is-done':''}${day===current?' is-today':''}`;
-      cell.title=`Jour ${day}`;
-      map.append(cell);
+    const cells=[];
+    for(let day=1;day<=totalDays;day++){
+      cells.push(`<i class="px-day${day<=currentDay?' is-done':''}${day===currentDay?' is-today':''}" title="Jour ${day}"></i>`);
     }
-    return map;
+    return cells.join('');
   }
 
-  function milestoneRows(){
-    const start=phoenix.profile?.startWeightKg||latest.weightKg||115;
-    const current=latest.weightKg||start;
-    return [110,105,100,90,80].map(target=>{
-      const percentage=clamp((start-current)/(start-target)*100,0,100);
-      const status=current<=target?'Atteint':`${number1(Math.max(0,current-target))} kg`;
-      return `<div class="lab-milestone"><strong>${target} kg</strong><div class="lab-milestone-track"><i style="width:${percentage}%"></i></div><small>${status}</small></div>`;
-    }).join('');
+  function missionHtml(){
+    const stepDone=Number(D.steps)>=10000;
+    const sleepDone=Number(D.sleepHours)>=7;
+    return `
+      <div class="px-mission ${stepDone?'is-done':'is-wait'}"><span class="px-mission-icon">👟</span><div><b>Activer le corps</b><small>${n0(D.steps)} pas enregistrés · cible 10 000</small></div><span class="px-mission-status">${stepDone?'Validé':'En cours'}</span></div>
+      <div class="px-mission ${sleepDone?'is-done':'is-wait'}"><span class="px-mission-icon">☾</span><div><b>Protéger la récupération</b><small>${hm(D.sleepHours)} · cible 7 heures</small></div><span class="px-mission-status">${sleepDone?'Validé':'À consolider'}</span></div>
+      <div class="px-mission is-wait"><span class="px-mission-icon">🥗</span><div><b>Documenter la nutrition</b><small>${D.mealCount==null?'Première saisie encore attendue':`${n0(D.mealCount)} repas consignés`}</small></div><span class="px-mission-status">${D.mealCount==null?'À renseigner':'Suivi'}</span></div>`;
   }
 
   function buildCommandCenter(){
-    if(document.querySelector('#lab-command-center'))return;
-    const anchor=document.querySelector('#synthese')||document.querySelector('.section');
-    if(!anchor)return;
+    if(q('#phoenix-command-center'))return;
+    const hero=q('.hero');
+    if(!hero)return;
+    const nextTarget=currentWeight>110?110:currentWeight>105?105:currentWeight>100?100:90;
+    const targetGap=Math.max(0,currentWeight-nextTarget);
+    const activityPct=clamp((Number(D.steps)||0)/10000*100,0,100);
+    const sleepPct=clamp((Number(D.sleepHours)||0)/7*100,0,100);
+    const bmi=Number(D.bmi)||0;
+    const level=Math.max(1,Math.floor(currentDay/7)+1);
+    const xp=currentDay%7/7*100||14;
 
     const section=document.createElement('section');
-    section.id='lab-command-center';
-    section.className='lab-command';
-    section.innerHTML=`<header class="lab-command-head"><div><span class="lab-kicker">Centre de progression</span><h2>Une vision claire des 365 jours</h2><p>Le quotidien reste simple. Les tendances, les paliers et l’histoire s’enrichissent à chaque journée officielle.</p></div><div class="lab-day-badge">Jour ${phoenix.project?.day||1} / ${phoenix.project?.totalDays||365}</div></header>`;
+    section.id='phoenix-command-center';
+    section.className='px-command';
+    section.innerHTML=`
+      <header class="px-command-head">
+        <div><span class="px-kicker">Phoenix Command Center</span><h2>Le tableau de bord qui raconte la transformation.</h2><p>Une lecture immédiate du corps, de l’effort et de la trajectoire — construite uniquement avec les données officiellement publiées.</p></div>
+        <div class="px-sync"><i></i> Données validées · Jour ${currentDay}</div>
+      </header>
 
-    const grid=document.createElement('div');
-    grid.className='lab-command-grid';
-    const calendar=document.createElement('article');
-    calendar.className='lab-panel';
-    calendar.innerHTML=`<div class="lab-panel-head"><h3>Calendrier de régularité</h3><span>${phoenix.project?.day||1} journée suivie</span></div>`;
-    calendar.append(yearMap());
-    calendar.insertAdjacentHTML('beforeend',`<div class="lab-year-legend"><span>${(phoenix.project?.start||'2026-07-29').split('-').reverse().join('/')}</span><span>${(phoenix.project?.end||'2027-07-28').split('-').reverse().join('/')}</span></div>`);
+      <div class="px-metrics">
+        <article class="px-metric"><small>Poids officiel</small><strong>${n1(currentWeight)} <span>kg</span></strong><p>${weightLost>0?`−${n1(weightLost)} kg depuis le départ`:'Point zéro de référence'}</p><div class="px-mini-track"><i style="width:${Math.max(2,weightPct)}%"></i></div></article>
+        <article class="px-metric"><small>Mouvement</small><strong>${n0(D.steps)} <span>pas</span></strong><p>${n2(D.distanceKm)} km · ${n0(D.exerciseMin)} min d’exercice</p><div class="px-mini-track"><i style="width:${activityPct}%"></i></div></article>
+        <article class="px-metric"><small>Récupération</small><strong>${hm(D.sleepHours)}</strong><p>${n0(D.sleepDeepMin)} min profond · ${n0(D.sleepRemMin)} min REM</p><div class="px-mini-track"><i style="width:${sleepPct}%"></i></div></article>
+        <article class="px-metric"><small>Corps</small><strong>${n1(D.bodyFatPct)} <span>% MG</span></strong><p>IMC ${n1(bmi)} · taille ${n1(D.waistCm)} cm</p><div class="px-mini-track"><i style="width:${clamp(100-(Number(D.bodyFatPct)||0),8,100)}%"></i></div></article>
+      </div>
 
-    const story=document.createElement('article');
-    story.className='lab-panel';
-    story.innerHTML=`<div class="lab-story"><div><span class="lab-kicker">Chapitre actuel</span><h3>${latest.journalTitle||'Le départ'}</h3><p>${latest.journalText||'Le premier chapitre de Project Phoenix est lancé.'}</p></div></div><div class="lab-milestones">${milestoneRows()}</div>`;
-    grid.append(calendar,story);
-    section.append(grid);
+      <div class="px-command-grid">
+        <article class="px-panel">
+          <div class="px-panel-head"><div><span class="px-kicker">Trajectoire officielle</span><h3>De ${n1(startWeight)} à ${n1(goalWeight)} kg</h3><p>La ligne pleine utilise les pesées réelles. Le pointillé montre uniquement le cap, jamais une promesse de date.</p></div><div class="px-range" aria-label="Période du graphique"><button class="is-active" type="button" data-range="1">1J</button><button type="button" data-range="7">7J</button><button type="button" data-range="30">30J</button></div></div>
+          <div class="px-chart">${chartSvg()}</div>
+          <div class="px-chart-foot"><span>Prochain palier : <b>${nextTarget} kg</b></span><span>${targetGap?`${n1(targetGap)} kg à franchir`:'Palier atteint'}</span></div>
+          <div class="px-chart-message" aria-live="polite">Une seule journée officielle est disponible. Cette vue s’enrichira automatiquement.</div>
+        </article>
 
-    const insights=document.createElement('div');
-    insights.className='lab-insights';
-    [
-      ['Charge du jour',`${number0(latest.steps)} pas`,'Une activité très élevée dès le lancement. La récupération compte autant que le volume.'],
-      ['Récupération',sleepText(latest.sleepHours),'La durée est correcte pour le point zéro. La tendance deviendra utile après plusieurs nuits.'],
-      ['Signaux corporels',`${number0(latest.restingHR)} bpm`,'Les indicateurs cardiaques sont présentés comme des tendances, jamais comme un diagnostic.']
-    ].forEach(([title,value,text])=>{
-      const card=document.createElement('article');
-      card.className='lab-insight';
-      card.innerHTML=`<div class="lab-insight-top"><strong class="lab-insight-value">${value}</strong></div><h3>${title}</h3><p>${text}</p>`;
-      insights.append(card);
+        <article class="px-panel">
+          <div class="px-panel-head"><div><span class="px-kicker">Indice Phoenix</span><h3>État global du Jour ${currentDay}</h3></div></div>
+          <div class="px-score-layout"><div class="px-score-ring" style="--score:${clamp(Number(D.score)||0,0,100)}"><div><strong>${n0(D.score)}</strong><span>sur 100</span></div></div><div class="px-score-copy"><h3>${Number(D.score)>=90?'Départ exceptionnel':Number(D.score)>=75?'Trajectoire solide':'Base à construire'}</h3><p>Le score synthétise les indicateurs publics du jour. Il sert de repère visuel, pas de diagnostic médical.</p></div></div>
+          <div class="px-xp"><div class="px-xp-row"><span>Niveau Phoenix ${level}</span><b>${n0(xp)} % vers le niveau suivant</b></div><div class="px-xp-track"><i style="width:${xp}%"></i></div></div>
+        </article>
+      </div>
+
+      <div class="px-lower-grid">
+        <article class="px-panel"><span class="px-kicker">Missions du jour</span><h3 style="margin:5px 0 0">Trois leviers, aucune complication.</h3><div class="px-missions">${missionHtml()}</div></article>
+        <article class="px-panel px-briefing"><span class="px-kicker">Briefing d’Auren</span><blockquote>Tu n’as pas besoin d’être parfait pendant 365 jours. Tu dois seulement rendre la prochaine bonne décision plus facile que la mauvaise.</blockquote><footer>Analyse du Jour ${currentDay} · fondée sur les données disponibles</footer><div class="px-briefing-tags"><span>Point fort : activité</span><span>Priorité : récupération</span><span>Prochaine donnée : nutrition</span></div></article>
+      </div>
+
+      <div class="px-journey"><div class="px-journey-head"><h3>La trace des 365 jours</h3><span>${currentDay} journée${currentDay>1?'s':''} officiellement enregistrée${currentDay>1?'s':''}</span></div><div class="px-year-map" role="img" aria-label="${currentDay} jour suivi sur ${totalDays}">${yearMap()}</div><div class="px-year-legend"><span>${(project.start||'').split('-').reverse().join('/')}</span><span>Chaque case est une journée réelle</span><span>${(project.end||'').split('-').reverse().join('/')}</span></div></div>`;
+
+    hero.insertAdjacentElement('afterend',section);
+  }
+
+  function setupRangeButtons(){
+    const message=q('.px-chart-message');
+    qa('.px-range button').forEach(button=>button.addEventListener('click',()=>{
+      qa('.px-range button').forEach(item=>item.classList.remove('is-active'));
+      button.classList.add('is-active');
+      if(message){
+        message.classList.toggle('is-visible',button.dataset.range!=='1'||history.length<2);
+        message.textContent=button.dataset.range==='1'?'Vue de la journée officielle.':`La vue ${button.dataset.range} jours se construira dès que suffisamment de journées seront disponibles.`;
+      }
+    }));
+  }
+
+  function decorateTopics(){
+    const cards=qa('.summaryGrid .topic');
+    cards.forEach((card,index)=>{
+      card.classList.add('lab-reveal');
+      if(!q('.px-module-index',card)){
+        const number=document.createElement('span');
+        number.className='px-module-index';
+        number.textContent=String(index+1).padStart(2,'0');
+        card.append(number);
+      }
     });
-    section.append(insights);
-    anchor.parentNode.insertBefore(section,anchor);
+    const sectionTitle=q('#synthese .sectionHead h2');
+    if(sectionTitle)sectionTitle.textContent='Sept modules pour lire une seule transformation';
+    const sectionCopy=q('#synthese .sectionHead p');
+    if(sectionCopy)sectionCopy.textContent='Chaque module ouvre un niveau de détail différent. Les tendances apparaissent uniquement lorsque l’historique devient suffisant.';
+  }
+
+  function activateNavigation(){
+    const detail=location.pathname.endsWith('details.html');
+    const theme=new URLSearchParams(location.search).get('theme');
+    qa('.phoenix-side-nav a').forEach(link=>{
+      const active=detail?theme&&link.href.includes(`theme=${theme}`):link.getAttribute('href')==='#top';
+      link.classList.toggle('is-active',Boolean(active));
+      if(active)link.setAttribute('aria-current','page');else link.removeAttribute('aria-current');
+    });
+  }
+
+  function detailMetrics(theme){
+    const metrics={
+      activite:[['Pas',n0(D.steps)],['Distance',`${n2(D.distanceKm)} km`],['Exercice',`${n0(D.exerciseMin)} min`]],
+      sommeil:[['Sommeil',hm(D.sleepHours)],['Profond',`${n0(D.sleepDeepMin)} min`],['REM',`${n0(D.sleepRemMin)} min`]],
+      nutrition:[['Calories',D.loggedCaloriesKcal==null?'En attente':`${n0(D.loggedCaloriesKcal)} kcal`],['Protéines',D.proteinG==null?'En attente':`${n0(D.proteinG)} g`],['Repas',D.mealCount==null?'En attente':n0(D.mealCount)]],
+      transformation:[['Poids',`${n1(D.weightKg)} kg`],['Masse grasse',`${n1(D.bodyFatPct)} %`],['Tour de taille',`${n1(D.waistCm)} cm`]],
+      sante:[['FC repos',`${n0(D.restingHR)} bpm`],['HRV',`${n1(D.hrvMs)} ms`],['FC max',`${n0(D.maxHR)} bpm`]],
+      journal:[['Jour',`${currentDay} / ${totalDays}`],['Date',(D.date||'').split('-').reverse().join('/')],['Score',`${n0(D.score)} / 100`]],
+      trophees:[['Débloqués',n0(D.trophiesUnlocked)],['Série',`${currentDay} jour${currentDay>1?'s':''}`],['Prochain cap','7 jours']]
+    };
+    return metrics[theme]||metrics.activite;
   }
 
   function enhanceDetails(){
-    document.querySelectorAll('.lab-detail-avatar,.lab-analysis>img').forEach(node=>node.remove());
-    const params=new URLSearchParams(location.search);
-    const key=params.get('theme')||'activite';
-    const messages={
-      activite:['Charge élevée, récupération prioritaire.','Le départ est exceptionnel. La prochaine étape consiste à rendre ce volume soutenable.'],
-      sommeil:['Durée atteinte, tendance à construire.','Une seule nuit donne un point de départ ; la régularité donnera la vraie lecture.'],
-      nutrition:['Aucune donnée nutritionnelle inventée.','Le journal s’enrichira uniquement avec des repas réellement consignés.'],
-      transformation:['Le point zéro est posé.','Le poids, les mensurations et les photos permettront de voir la progression complète.'],
-      sante:['Une valeur ne fait pas une tendance.','Les données de santé restent des repères de suivi et non un diagnostic.'],
-      journal:['Le contexte donne du sens aux chiffres.','Chaque journée raconte les choix, les difficultés et les victoires.'],
-      trophees:['Chaque étape compte.','Les trophées transforment les habitudes régulières en jalons visibles.']
-    };
-    const section=document.querySelector('.section');
-    if(section&&!section.querySelector('.lab-analysis')){
-      const message=messages[key]||messages.activite;
+    const theme=new URLSearchParams(location.search).get('theme')||'activite';
+    const section=q('.section');
+    if(!section)return;
+    qa('.lab-detail-avatar,.lab-analysis>img').forEach(node=>node.remove());
+    if(!q('.px-detail-overview',section)){
+      const overview=document.createElement('div');
+      overview.className='px-detail-overview';
+      overview.innerHTML=detailMetrics(theme).map(([label,value])=>`<article class="px-detail-metric"><span>${label}</span><b>${value}</b></article>`).join('');
+      section.prepend(overview);
+    }
+    if(!q('.lab-analysis',section)){
+      const messages={
+        activite:['Une journée très active.','La priorité est maintenant de transformer ce volume exceptionnel en rythme durable.'],
+        sommeil:['Une base correcte, pas encore une tendance.','Plusieurs nuits seront nécessaires avant de conclure sur la récupération.'],
+        nutrition:['Le vide vaut mieux qu’une invention.','Aucune donnée nutritionnelle ne sera affichée tant qu’elle n’est pas réellement consignée.'],
+        transformation:['Le point zéro est complet.','Poids, masse grasse et tour de taille donnent une base solide aux futures comparaisons.'],
+        sante:['Lire les tendances, jamais diagnostiquer.','Fréquence cardiaque et HRV sont présentées comme des repères de suivi.'],
+        journal:['Les chiffres ont besoin d’une histoire.','Le journal conserve les décisions, les difficultés et les victoires derrière les données.'],
+        trophees:['Les jalons rendent l’effort visible.','Chaque trophée récompense une action réellement enregistrée.']
+      };
+      const [title,text]=messages[theme]||messages.activite;
       const note=document.createElement('div');
       note.className='lab-analysis';
-      note.innerHTML=`<div><small>Phoenix analyse</small><h3>${message[0]}</h3><p>${message[1]}</p></div>`;
+      note.innerHTML=`<small>Analyse d’Auren</small><h3>${title}</h3><p>${text}</p>`;
       section.prepend(note);
     }
   }
 
-  injectPremiumLayout();
-  keepOnlyMainAvatar();
+  function revealOnScroll(){
+    const nodes=qa('.lab-reveal,.px-command,.px-panel,.px-metric');
+    nodes.forEach(node=>node.classList.add('lab-reveal'));
+    if(!('IntersectionObserver'in window)||matchMedia('(prefers-reduced-motion: reduce)').matches){
+      nodes.forEach(node=>node.classList.add('is-visible'));
+      return;
+    }
+    const observer=new IntersectionObserver(entries=>entries.forEach(entry=>{
+      if(entry.isIntersecting){
+        entry.target.classList.add('is-visible');
+        observer.unobserve(entry.target);
+      }
+    }),{threshold:.06,rootMargin:'0px 0px -30px'});
+    nodes.forEach(node=>observer.observe(node));
+  }
+
+  function avatarParallax(){
+    const card=q('.phoenixCard');
+    if(!card||!matchMedia('(pointer:fine)').matches||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+    card.addEventListener('pointermove',event=>{
+      const rect=card.getBoundingClientRect();
+      const x=(event.clientX-rect.left)/rect.width-.5;
+      const y=(event.clientY-rect.top)/rect.height-.5;
+      card.style.transform=`perspective(1000px) rotateY(${x*4}deg) rotateX(${-y*3}deg)`;
+    });
+    card.addEventListener('pointerleave',()=>{card.style.transform=''});
+  }
+
+  replaceTextEverywhere();
+  addScrollProgress();
+  ensureMainAvatar();
+  upgradeHero();
+  addSidebarStatus();
+  activateNavigation();
 
   if(location.pathname.endsWith('details.html')){
     enhanceDetails();
   }else{
-    personalizeAuren();
-    buildPulse();
     buildCommandCenter();
+    setupRangeButtons();
+    decorateTopics();
   }
 
+  avatarParallax();
   revealOnScroll();
 })();
