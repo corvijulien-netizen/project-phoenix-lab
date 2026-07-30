@@ -72,6 +72,21 @@
     setTimeout(()=>animateNumber(score,D.score),150);
   }
 
+  function personalizeAuren(){
+    const card=document.querySelector('.phoenixCard');
+    if(!card||card.querySelector('.auren-profile'))return;
+    const walker=document.createTreeWalker(card,NodeFilter.SHOW_TEXT);
+    const nodes=[];while(walker.nextNode())nodes.push(walker.currentNode);
+    nodes.forEach(node=>{const value=node.nodeValue||'';if(value.includes('Phoenix IA'))node.nodeValue=value.replace(/Phoenix IA/g,'Auren')});
+    const img=card.querySelector(':scope>img');
+    if(!img)return;
+    const profile=document.createElement('div');profile.className='auren-profile';
+    profile.innerHTML='<span class="auren-role">Ton guide du challenge</span><h2>Auren</h2><p>Je suis Auren, ton compagnon de route dans Projet Phoenix. Je transforme tes données en repères clairs, je veille sur ta progression et je t’aide à avancer chaque jour avec honnêteté, bienveillance et motivation.</p>';
+    let sibling=img.nextElementSibling;
+    while(sibling){const next=sibling.nextElementSibling;if(/guide du challenge|phoenix ia|données claires|progression honnête|motivation quotidienne/i.test(sibling.textContent||''))sibling.remove();sibling=next}
+    img.insertAdjacentElement('afterend',profile);
+  }
+
   function enhanceTopics(){
     document.querySelectorAll('.topic').forEach(card=>{
       if(card.querySelector('.lab-topic-avatar'))return;
@@ -167,6 +182,6 @@
   }
 
   // Conserver les icônes et la disposition de la navigation officielle.
-  if(location.pathname.endsWith('details.html'))enhanceDetails();else{enhanceTopics();buildPulse();buildCommandCenter()}
+  if(location.pathname.endsWith('details.html'))enhanceDetails();else{enhanceTopics();personalizeAuren();buildPulse();buildCommandCenter()}
   observeReveals();
 })();
