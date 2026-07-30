@@ -22,3 +22,58 @@
 /* En-tête horizontal masqué : la navigation est déjà disponible dans la barre latérale (et en bas sur mobile). */
 body > header.wrap.nav{display:none!important}
 @media(min-width:1101px){.phoenix-side-nav{top:16px!important}}
+
+
+/* Phoenix Lab compact : interface sans avatars et navigation latérale agrandie. */
+.phoenixCard>img,
+.lab-topic-avatar,
+.lab-pulse>img,
+.lab-story>img,
+.lab-insight img,
+.lab-analysis>img,
+.lab-detail-avatar{display:none!important}
+.phoenixCard:before{display:none!important}
+.phoenixCard{padding:22px!important}
+.auren-profile{padding-top:4px!important}
+.lab-pulse{grid-template-columns:minmax(0,1fr) auto!important}
+.lab-story{grid-template-columns:1fr!important}
+.lab-insight-top{justify-content:flex-end!important}
+.lab-analysis{grid-template-columns:1fr!important}
+.detailHero{min-height:0!important;padding-right:24px!important}
+.topic{min-height:0!important}
+
+@media(min-width:1101px){
+  .app-shell{
+    grid-template-columns:148px minmax(0,1fr)!important;
+    gap:22px!important;
+    width:min(1390px,calc(100% - 24px))!important
+  }
+  .phoenix-side-nav{
+    width:148px!important;
+    padding:12px!important;
+    gap:7px!important;
+    border-radius:22px!important
+  }
+  .phoenix-side-nav a{
+    min-height:58px!important;
+    padding:8px 10px!important;
+    grid-template-columns:34px minmax(0,1fr)!important;
+    place-items:center start!important;
+    gap:10px!important;
+    border-radius:14px!important;
+    text-align:left!important;
+    font-size:12px!important
+  }
+  .phoenix-side-nav a .navIcon{
+    justify-self:center!important;
+    font-size:27px!important
+  }
+  .phoenix-side-nav a>span:last-child{
+    font-size:12px!important;
+    line-height:1.15!important
+  }
+}
+
+@media(max-width:1000px){
+  .detailHero{padding-bottom:24px!important}
+}
