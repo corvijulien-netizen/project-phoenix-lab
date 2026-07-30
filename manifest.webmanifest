@@ -10,7 +10,7 @@
   "theme_color": "#080c13",
   "icons": [
     {
-      "src": "/project-phoenix-lab/assets/avatars/phoenix-main.svg",
+      "src": "/project-phoenix-lab/assets/avatars/phoenix-avatar.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any maskable"
