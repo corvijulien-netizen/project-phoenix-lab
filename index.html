@@ -6,7 +6,8 @@
   <meta name="theme-color" content="#f2ead9">
   <meta name="description" content="Camino Virtuel — 3 000 km de Rome à Santiago, un kilomètre réel après l'autre.">
   <title>Camino Virtuel — Rome → Santiago</title>
-  <link rel="stylesheet" href="lab.css?v=1">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="lab.css?v=2">
 </head>
 <body>
   <div class="paper-noise" aria-hidden="true"></div>
@@ -15,12 +16,15 @@
     <a class="brand" href="#dashboard" aria-label="Camino Virtuel — Accueil">
       <span class="brand-mark" aria-hidden="true">
         <svg viewBox="0 0 64 64" role="img">
-          <circle cx="32" cy="32" r="29"></circle>
-          <path d="M32 10 36 27 51 18 39 31 55 34 38 37 47 53 34 41 29 56 28 40 12 48 25 35 9 30 26 29Z"></path>
+          <circle class="brand-ring" cx="32" cy="32" r="29"></circle>
+          <path class="brand-shell" d="M32 51C17 47 10 33 15 20c2-6 9-7 17 0 8-7 15-6 17 0 5 13-2 27-17 31Z"></path>
+          <path class="brand-rays" d="M32 21v27M21 21l8 27M43 21l-8 27M16 27l10 19M48 27 38 46M14 35l9 9M50 35l-9 9"></path>
         </svg>
       </span>
-      <span class="brand-name">Camino<br>Virtuel</span>
-      <span class="brand-tagline">Rome → Santiago</span>
+      <span class="brand-copy">
+        <span class="brand-name">Camino<br>Virtuel</span>
+        <span class="brand-tagline">Rome → Santiago</span>
+      </span>
     </a>
 
     <div class="sidebar-rule" aria-hidden="true"></div>
@@ -92,7 +96,7 @@
           <span class="route-arrow">→</span>
           <span>SANTIAGO</span>
         </div>
-        <svg class="camino-map" viewBox="0 0 1000 650" role="img" aria-labelledby="map-title map-desc">
+        <svg class="camino-map legacy-map" viewBox="0 0 1000 650" role="img" aria-labelledby="map-title map-desc">
           <title id="map-title">Carte illustrée du Camino Virtuel de Rome à Santiago</title>
           <desc id="map-desc">Le tracé traverse l’Italie, le sud de la France et le nord de l’Espagne. La portion Rome-La Storta est parcourue.</desc>
           <defs>
@@ -161,6 +165,29 @@
           </g>
         </svg>
 
+        <div id="camino-map" class="camino-map interactive-map" role="application" aria-label="Carte interactive et zoomable du Camino Virtuel de Rome à Santiago"></div>
+        <div class="map-actions" aria-label="Commandes de la carte">
+          <button type="button" data-map-overview title="Afficher tout le chemin">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3ZM9 3v15M15 6v15"></path></svg>
+            <span>Tout le chemin</span>
+          </button>
+          <button type="button" data-map-focus title="Centrer sur ma position">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><circle cx="12" cy="12" r="8"></circle><path d="M12 2V5M12 19v3M2 12h3M19 12h3"></path></svg>
+            <span>Ma position</span>
+          </button>
+        </div>
+        <div class="map-plaque-html" aria-hidden="true">
+          <strong>Rome → Santiago</strong>
+          <span>≈ 3 000 km selon le tracé</span>
+          <small>Mes pas sont réels. Le voyage est virtuel.</small>
+        </div>
+        <div class="map-shell-watermark" aria-hidden="true">
+          <svg viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="42"></circle>
+            <path d="M50 78C30 72 22 52 30 35c3-8 11-9 20-2 9-7 17-6 20 2 8 17 0 37-20 43ZM50 34v40M36 35l10 39M64 35 54 74M28 42l14 31M72 42 58 73M26 53l12 18M74 53 62 71"></path>
+            <path d="M50 1v17M50 82v17M1 50h17M82 50h17"></path>
+          </svg>
+        </div>
         <div class="map-mobile-progress">
           <span>Rome</span>
           <span class="mini-track"><i></i></span>
@@ -216,7 +243,14 @@
           <span>Marche</span>
           <strong>11,2 <small>km</small></strong>
         </span>
-        <span class="metric-art boots" aria-hidden="true">🥾</span>
+        <span class="metric-art boots" aria-hidden="true">
+          <svg viewBox="0 0 112 82">
+            <path class="art-wash" d="M9 65c24-8 43-7 60 0 13 5 24 5 35 1"></path>
+            <path class="art-fill" d="M28 11c8 13 11 22 8 35-1 5 3 9 9 11 16 5 36 3 48-8 6-6 3-14-5-17L64 24 58 8Z"></path>
+            <path d="M34 18h25M36 26h26M37 34h29M39 42l25 8M63 25l8 24M40 55c15 8 35 8 49-2"></path>
+            <path class="art-grass" d="M14 66v-13m0 8-6-8m6 5 6-10M96 66v-9m0 5-5-7m5 4 5-9"></path>
+          </svg>
+        </span>
         <span class="metric-bar"><i style="width: 75%"></i></span>
         <span class="metric-goal">Objectif quotidien 15 km</span>
         <span class="metric-chevron">›</span>
@@ -230,7 +264,16 @@
           <span>Nutrition</span>
           <strong>1 820 <small>kcal</small></strong>
         </span>
-        <span class="metric-art bowl" aria-hidden="true">🥗</span>
+        <span class="metric-art bowl" aria-hidden="true">
+          <svg viewBox="0 0 112 82">
+            <path class="art-fill" d="M20 45h73c-4 20-17 29-36 29S24 65 20 45Z"></path>
+            <path d="M17 45h79M28 69h58"></path>
+            <circle class="food-red" cx="43" cy="39" r="9"></circle>
+            <circle class="food-gold" cx="68" cy="39" r="10"></circle>
+            <path class="food-leaf" d="M31 42C19 30 22 20 39 18c2 12-1 19-8 24ZM76 42c0-15 9-23 24-19-4 13-12 20-24 19ZM55 38C47 23 53 13 69 11c1 14-4 23-14 27Z"></path>
+            <path d="M31 40 25 25M77 40l17-12M56 36l9-19"></path>
+          </svg>
+        </span>
         <span class="metric-bar"><i style="width: 90%"></i></span>
         <span class="metric-goal">Objectif d’équilibre 90 %</span>
         <span class="metric-chevron">›</span>
@@ -244,7 +287,13 @@
           <span>Sommeil</span>
           <strong>7 h 12</strong>
         </span>
-        <span class="metric-art moon" aria-hidden="true">✦</span>
+        <span class="metric-art moon" aria-hidden="true">
+          <svg viewBox="0 0 112 82">
+            <path class="night-cloud" d="M20 63c2-10 10-15 20-12 5-13 24-15 32-3 12-4 23 3 24 15Z"></path>
+            <path class="moon-fill" d="M67 10a25 25 0 0 0 20 40A27 27 0 1 1 67 10Z"></path>
+            <path class="night-star" d="m30 18 2 6 6 2-6 2-2 6-2-6-6-2 6-2ZM91 14l1 4 4 1-4 1-1 4-1-4-4-1 4-1ZM46 9l1 3 3 1-3 1-1 3-1-3-3-1 3-1Z"></path>
+          </svg>
+        </span>
         <span class="metric-bar"><i style="width: 96%"></i></span>
         <span class="metric-goal">Objectif 7 h 30</span>
         <span class="metric-chevron">›</span>
@@ -258,7 +307,14 @@
           <span>Journal</span>
           <strong>1 <small>entrée</small></strong>
         </span>
-        <span class="metric-art journal" aria-hidden="true">✎</span>
+        <span class="metric-art journal" aria-hidden="true">
+          <svg viewBox="0 0 112 82">
+            <path class="art-fill" d="M11 19c19-5 35 0 44 10 9-10 25-15 44-10v49c-19-5-35 0-44 10-9-10-25-15-44-10Z"></path>
+            <path d="M55 29v49M20 31c12-2 22 0 29 5M20 42c12-2 22 0 29 5M91 31c-12-2-22 0-29 5M91 42c-12-2-22 0-29 5"></path>
+            <path class="feather-fill" d="M80 7c12-3 18 4 13 14L66 53l-8 4 3-9Z"></path>
+            <path d="m60 51 27-33M75 23l10 1M70 29l10 2"></path>
+          </svg>
+        </span>
         <span class="metric-bar"><i style="width: 100%"></i></span>
         <span class="metric-goal">Objectif quotidien atteint</span>
         <span class="metric-chevron">›</span>
@@ -348,6 +404,7 @@
   </dialog>
 
   <div class="toast" role="status" aria-live="polite" data-toast></div>
-  <script src="lab.js?v=1"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="lab.js?v=2"></script>
 </body>
 </html>
