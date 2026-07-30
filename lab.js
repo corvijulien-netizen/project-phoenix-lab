@@ -166,7 +166,7 @@
     }
   }
 
-  enhanceNavigation();
+  // Conserver les icônes et la disposition de la navigation officielle.
   if(location.pathname.endsWith('details.html'))enhanceDetails();else{enhanceTopics();buildPulse();buildCommandCenter()}
   observeReveals();
 })();
