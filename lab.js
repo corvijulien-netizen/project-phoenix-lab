@@ -299,32 +299,91 @@
   }
 
   function buildPassport() {
-    const grid = $("[data-stamp-grid]");
-    if (!grid) return;
+    const grids = $$("[data-stamp-grid], [data-credential-grid]");
+    if (!grids.length) return;
 
     const totalStamps = Math.ceil(state.totalDistance / state.stampDistance);
     const completedStamps = Math.floor(state.distance / state.stampDistance);
-    const fragment = document.createDocumentFragment();
+    const stampColors = ["blue", "red", "green", "violet", "sepia"];
+    const routeLengths = [];
+    let routeLength = 0;
 
-    for (let index = 1; index <= totalStamps; index += 1) {
-      const slot = document.createElement("span");
-      const threshold = index * state.stampDistance;
-      slot.className = "stamp-slot";
-      slot.textContent = threshold;
-      slot.title = `Tampon ${index} — ${formatKm(threshold)} km`;
-
-      if (index <= completedStamps) {
-        slot.classList.add("is-complete");
-        slot.textContent = "✓";
-      } else if (index === completedStamps + 1) {
-        slot.classList.add("in-progress");
-        slot.title = `Prochain tampon — ${formatKm(state.distance)} / ${formatKm(threshold)} km`;
-      }
-
-      fragment.appendChild(slot);
+    for (let index = 1; index < caminoRoute.length; index += 1) {
+      const segmentLength = haversineKm(
+        caminoRoute[index - 1].coords,
+        caminoRoute[index].coords
+      );
+      routeLengths.push(segmentLength);
+      routeLength += segmentLength;
     }
 
-    grid.replaceChildren(fragment);
+    const placeAtRatio = (ratio) => {
+      const target = routeLength * Math.max(0, Math.min(1, ratio));
+      let travelled = 0;
+
+      for (let index = 0; index < routeLengths.length; index += 1) {
+        const nextTravelled = travelled + routeLengths[index];
+        if (nextTravelled >= target) {
+          const segmentProgress = routeLengths[index]
+            ? (target - travelled) / routeLengths[index]
+            : 0;
+          return segmentProgress < .5
+            ? caminoRoute[index].name
+            : caminoRoute[index + 1].name;
+        }
+        travelled = nextTravelled;
+      }
+
+      return caminoRoute[caminoRoute.length - 1].name;
+    };
+
+    const shellIcon = `
+      <svg viewBox="0 0 32 32" aria-hidden="true">
+        <path d="M16 27C7 24 4 14 8 7c2-3 5-2 8 1 3-3 6-4 8-1 4 7 1 17-8 20Zm0-17v15M10 9l5 16M22 9l-5 16M7 13l6 11M25 13l-6 11"></path>
+      </svg>
+    `;
+
+    grids.forEach((grid) => {
+      const limit = Math.min(
+        totalStamps,
+        Number.parseInt(grid.dataset.limit || totalStamps, 10)
+      );
+      const fragment = document.createDocumentFragment();
+
+      for (let index = 1; index <= limit; index += 1) {
+        const slot = document.createElement("span");
+        const threshold = index * state.stampDistance;
+        const place = placeAtRatio(threshold / state.totalDistance);
+        const color = stampColors[(index - 1) % stampColors.length];
+        const status = index <= completedStamps
+          ? "Tampon obtenu"
+          : index === completedStamps + 1
+            ? `${formatKm(state.distance)} / ${formatKm(threshold)} km`
+            : `À ${formatKm(threshold)} km`;
+
+        slot.className = `stamp-slot stamp-${color}`;
+        slot.title = `Tampon ${index} — ${place} — ${formatKm(threshold)} km`;
+        slot.innerHTML = `
+          <span class="stamp-imprint">
+            <span class="stamp-place">${place}</span>
+            ${shellIcon}
+            <span class="stamp-distance">${formatKm(threshold)} km</span>
+          </span>
+          <span class="stamp-status">${status}</span>
+        `;
+
+        if (index <= completedStamps) {
+          slot.classList.add("is-complete");
+        } else if (index === completedStamps + 1) {
+          slot.classList.add("in-progress");
+          slot.title = `Prochain tampon — ${formatKm(state.distance)} / ${formatKm(threshold)} km`;
+        }
+
+        fragment.appendChild(slot);
+      }
+
+      grid.replaceChildren(fragment);
+    });
   }
 
   function setActiveNav(target) {
