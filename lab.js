@@ -1,178 +1,261 @@
 (()=>{
   'use strict';
+
   const cfg=window.PHOENIX_LAB||{};
-  const A=cfg.assets||{};
-  const H=window.PHOENIX;
-  if(!H||document.documentElement.dataset.phoenixLabEnhanced)return;
-  document.documentElement.dataset.phoenixLabEnhanced='true';
+  const assets=cfg.assets||{};
+  const phoenix=window.PHOENIX;
+  if(!phoenix||document.documentElement.dataset.phoenixLabPremium)return;
+  document.documentElement.dataset.phoenixLabPremium='true';
 
-  const D=H.history[H.history.length-1];
-  const topicOrder=['activite','sommeil','nutrition','transformation','sante','journal','trophees'];
-  const classMap=[['activity','activite'],['sleep','sommeil'],['nutrition','nutrition'],['transform','transformation'],['health','sante'],['journal','journal'],['trophies','trophees']];
-  const navMap=[['activity-link','activite'],['sleep-link','sommeil'],['nutrition-link','nutrition'],['transform-link','transformation'],['health-link','sante'],['journal-link','journal'],['trophy-link','trophees']];
-  const f0=n=>new Intl.NumberFormat('fr-FR',{maximumFractionDigits:0}).format(n);
-  const f1=n=>new Intl.NumberFormat('fr-FR',{minimumFractionDigits:1,maximumFractionDigits:1}).format(n);
-  const f2=n=>new Intl.NumberFormat('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2}).format(n);
-  const hm=h=>{if(h==null)return 'En attente';const m=Math.round(h*60);return Math.floor(m/60)+' h '+String(m%60).padStart(2,'0')};
-  const clamp=(n,a,b)=>Math.min(b,Math.max(a,n));
+  const latest=phoenix.history?.[phoenix.history.length-1]||{};
+  const number0=n=>new Intl.NumberFormat('fr-FR',{maximumFractionDigits:0}).format(Number(n)||0);
+  const number1=n=>new Intl.NumberFormat('fr-FR',{minimumFractionDigits:1,maximumFractionDigits:1}).format(Number(n)||0);
+  const number2=n=>new Intl.NumberFormat('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2}).format(Number(n)||0);
+  const clamp=(n,min,max)=>Math.min(max,Math.max(min,n));
+  const sleepText=h=>{if(h==null)return 'En attente';const m=Math.round(h*60);return `${Math.floor(m/60)} h ${String(m%60).padStart(2,'0')}`};
 
-  function safeImg(key,alt='',lazy=true){
-    const img=document.createElement('img');
-    img.alt=alt;
-    if(lazy)img.loading='lazy';
-    img.decoding='async';
-    img.src=A[key]||cfg.officialBase+'phoenix.svg';
-    img.onerror=()=>{img.onerror=null;img.src=cfg.officialBase+'phoenix.svg'};
-    return img;
+  function injectPremiumLayout(){
+    if(document.querySelector('#phoenix-premium-layout'))return;
+    const style=document.createElement('style');
+    style.id='phoenix-premium-layout';
+    style.textContent=`
+      /* Phoenix Lab V8 — grand écran, navigation forte, un seul avatar */
+      html{scroll-behavior:smooth}
+      body{overflow-x:hidden;background:radial-gradient(circle at 5% 8%,rgba(65,146,255,.13),transparent 28%),radial-gradient(circle at 92% 3%,rgba(157,112,255,.10),transparent 24%),#07101f!important}
+      body>header.wrap.nav{display:none!important}
+
+      .lab-topic-avatar,.navAvatar,.lab-pulse>img,.lab-story>img,.lab-insight img,.lab-analysis>img,.lab-detail-avatar{display:none!important}
+      .topic .lab-topic-avatar{display:none!important}
+
+      .phoenixCard{position:relative!important;overflow:hidden!important;min-height:560px!important;padding:22px 22px 26px!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:flex-start!important;background:radial-gradient(circle at 50% 20%,rgba(71,157,255,.22),transparent 42%),linear-gradient(155deg,rgba(19,40,74,.96),rgba(8,19,38,.98))!important;border:1px solid rgba(111,167,255,.22)!important;box-shadow:0 30px 75px rgba(0,0,0,.38)!important}
+      .phoenixCard:before{display:block!important;content:""!important;position:absolute!important;inset:-35%!important;background:radial-gradient(circle,rgba(92,168,255,.17),transparent 58%)!important;animation:labPulse 7s ease-in-out infinite!important;pointer-events:none!important}
+      .phoenixCard>img,.phoenixCard>.lab-main-avatar{display:block!important;position:relative!important;z-index:2!important;width:min(100%,330px)!important;height:auto!important;aspect-ratio:1/1.08!important;object-fit:cover!important;object-position:center 18%!important;margin:0 auto!important;border-radius:27px!important;border:3px solid rgba(255,255,255,.10)!important;filter:drop-shadow(0 24px 34px rgba(0,0,0,.42))!important;box-shadow:0 0 0 1px rgba(103,172,255,.18),0 25px 60px rgba(0,0,0,.28)!important;animation:labFloat 5.4s ease-in-out infinite!important}
+      .auren-profile{position:relative!important;z-index:3!important;width:100%!important;padding:22px 8px 3px!important;text-align:center!important}
+      .auren-profile .auren-role{display:block!important;color:#58dcf4!important;font-size:10px!important;font-weight:900!important;letter-spacing:.15em!important;text-transform:uppercase!important}
+      .auren-profile h2{margin:8px 0 10px!important;font-size:38px!important;line-height:1!important;letter-spacing:-.04em!important}
+      .auren-profile p{max-width:340px!important;margin:0 auto!important;color:#b7c5d9!important;font-size:13px!important;line-height:1.65!important}
+
+      .lab-pulse{grid-template-columns:minmax(0,1fr) auto!important}
+      .lab-story{grid-template-columns:1fr!important}
+      .lab-insight-top{justify-content:flex-end!important}
+      .lab-analysis{grid-template-columns:1fr!important}
+      .detailHero{min-height:0!important;padding-right:24px!important;padding-bottom:24px!important}
+      .topic{min-height:0!important}
+
+      @media(min-width:1101px){
+        .app-shell{display:grid!important;grid-template-columns:clamp(250px,18vw,325px) minmax(0,1fr)!important;gap:clamp(24px,2vw,38px)!important;width:100%!important;max-width:none!important;margin:0!important;padding:0 clamp(22px,2.4vw,46px) 90px!important;align-items:start!important}
+        .app-shell>main,.app-shell>.content,.app-shell>.app-main,.app-shell>div:not(.phoenix-side-nav){min-width:0!important;width:100%!important;max-width:none!important}
+        .phoenix-side-nav{display:grid!important;position:sticky!important;left:auto!important;right:auto!important;top:16px!important;width:100%!important;min-width:0!important;min-height:calc(100vh - 32px)!important;max-height:calc(100vh - 32px)!important;height:auto!important;margin:16px 0 0!important;padding:20px 16px!important;grid-template-columns:1fr!important;align-content:start!important;gap:8px!important;overflow:auto!important;border-radius:28px!important;background:linear-gradient(180deg,rgba(15,31,58,.96),rgba(8,20,40,.97))!important;border:1px solid rgba(122,166,225,.18)!important;box-shadow:0 28px 70px rgba(0,0,0,.34)!important}
+        .phoenix-side-nav:before{content:"PROJECT PHOENIX";display:block;padding:9px 12px 17px;margin-bottom:4px;border-bottom:1px solid rgba(143,170,213,.14);color:#7fdcf1;font-size:10px;font-weight:900;letter-spacing:.16em;text-align:center}
+        .phoenix-side-nav a{min-height:64px!important;padding:9px 12px!important;display:grid!important;grid-template-columns:46px minmax(0,1fr)!important;place-items:center start!important;gap:12px!important;border-radius:16px!important;text-align:left!important;font-size:13px!important;transition:transform .2s ease,background .2s ease,border-color .2s ease!important}
+        .phoenix-side-nav a:hover{transform:translateX(4px)!important;background:rgba(72,139,239,.12)!important;border-color:rgba(93,160,255,.22)!important}
+        .phoenix-side-nav a.active,.phoenix-side-nav a[aria-current="page"]{background:linear-gradient(135deg,rgba(52,124,245,.21),rgba(139,99,246,.14))!important;border-color:rgba(92,159,255,.25)!important}
+        .phoenix-side-nav a .navIcon{justify-self:center!important;font-size:29px!important}
+        .phoenix-side-nav a>span:last-child{display:block!important;font-size:13px!important;line-height:1.15!important;font-weight:800!important}
+        .phoenix-mobile-nav{display:none!important}
+        .summaryGrid{grid-template-columns:minmax(300px,360px) minmax(0,1fr)!important;gap:24px!important;align-items:start!important}
+        .hero,.section,.lab-command,.lab-pulse,.lab-focus{width:100%!important;max-width:none!important}
+      }
+
+      @media(min-width:1500px){
+        .app-shell{grid-template-columns:340px minmax(0,1fr)!important;padding-left:42px!important;padding-right:42px!important}
+        .phoenixCard{min-height:620px!important}
+        .phoenixCard>img,.phoenixCard>.lab-main-avatar{width:350px!important}
+      }
+
+      @media(max-width:1100px){
+        .phoenixCard{min-height:auto!important}
+        .phoenixCard>img,.phoenixCard>.lab-main-avatar{width:min(100%,280px)!important}
+      }
+
+      @media(max-width:700px){
+        .phoenixCard{padding:16px!important}
+        .phoenixCard>img,.phoenixCard>.lab-main-avatar{width:min(100%,230px)!important;border-radius:22px!important}
+        .auren-profile h2{font-size:30px!important}
+      }
+    `;
+    document.head.append(style);
   }
 
-  function enhanceNavigation(){
-    document.querySelectorAll('.phoenix-side-nav a,.phoenix-mobile-nav a').forEach(a=>{
-      const href=a.getAttribute('href')||'';
-      const found=topicOrder.find(k=>href.includes('theme='+k));
-      if(!found)return;
-      const old=a.querySelector('.navIcon');
-      if(old)old.replaceWith(Object.assign(safeImg(found,'',true),{className:'navAvatar'}));
+  function createImage(key,alt,lazy=true){
+    const image=document.createElement('img');
+    image.alt=alt;
+    image.decoding='async';
+    if(lazy)image.loading='lazy';
+    image.src=assets[key]||`${cfg.officialBase||''}phoenix.svg`;
+    image.onerror=()=>{image.onerror=null;image.src=`${cfg.officialBase||''}phoenix.svg`};
+    return image;
+  }
+
+  function keepOnlyMainAvatar(){
+    document.querySelectorAll('.lab-topic-avatar,.navAvatar').forEach(node=>node.remove());
+    document.querySelectorAll('.topic img[src*="assets/avatars/"],.phoenix-side-nav img[src*="assets/avatars/"]').forEach(node=>node.remove());
+
+    const card=document.querySelector('.phoenixCard');
+    if(!card)return;
+
+    let image=card.querySelector(':scope>img');
+    if(!image){
+      image=createImage('main','Auren, avatar principal de Project Phoenix',false);
+      card.prepend(image);
+    }
+    if(assets.main)image.src=assets.main;
+    image.className='lab-main-avatar';
+    image.loading='eager';
+    image.fetchPriority='high';
+  }
+
+  function personalizeAuren(){
+    const card=document.querySelector('.phoenixCard');
+    if(!card)return;
+
+    const walker=document.createTreeWalker(card,NodeFilter.SHOW_TEXT);
+    const textNodes=[];
+    while(walker.nextNode())textNodes.push(walker.currentNode);
+    textNodes.forEach(node=>{
+      if((node.nodeValue||'').includes('Phoenix IA'))node.nodeValue=node.nodeValue.replace(/Phoenix IA/g,'Auren');
     });
+
+    let profile=card.querySelector('.auren-profile');
+    if(!profile){
+      profile=document.createElement('div');
+      profile.className='auren-profile';
+      profile.innerHTML='<span class="auren-role">Guide officiel du challenge</span><h2>Auren</h2><p>Ton compagnon de route dans Project Phoenix. Il transforme les données en repères clairs, suit les progrès et raconte la transformation avec honnêteté.</p>';
+      const image=card.querySelector(':scope>img');
+      if(image)image.insertAdjacentElement('afterend',profile);else card.prepend(profile);
+    }
   }
 
-  function observeReveals(){
-    const nodes=document.querySelectorAll('.lab-reveal');
-    if(!('IntersectionObserver'in window)){nodes.forEach(n=>n.classList.add('is-visible'));return}
-    const io=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('is-visible');io.unobserve(e.target)}}),{threshold:.08});
-    nodes.forEach(n=>io.observe(n));
-  }
-
-  function animateNumber(el,target,duration=900){
-    if(!el||matchMedia('(prefers-reduced-motion: reduce)').matches){if(el)el.textContent=target;return}
-    const start=performance.now();
-    const step=now=>{const p=clamp((now-start)/duration,0,1);const eased=1-Math.pow(1-p,3);el.textContent=Math.round(target*eased);if(p<1)requestAnimationFrame(step)};
-    requestAnimationFrame(step);
+  function revealOnScroll(){
+    const nodes=document.querySelectorAll('.topic,.lab-pulse,.lab-focus,.lab-command');
+    nodes.forEach(node=>node.classList.add('lab-reveal'));
+    if(!('IntersectionObserver'in window)){nodes.forEach(n=>n.classList.add('is-visible'));return;}
+    const observer=new IntersectionObserver(entries=>entries.forEach(entry=>{
+      if(entry.isIntersecting){entry.target.classList.add('is-visible');observer.unobserve(entry.target);}
+    }),{threshold:.07});
+    nodes.forEach(node=>observer.observe(node));
   }
 
   function buildPulse(){
     const hero=document.querySelector('.hero');
     if(!hero||document.querySelector('.lab-pulse'))return;
     const pulse=document.createElement('section');
-    pulse.className='lab-pulse lab-reveal';
-    const copy=document.createElement('div');
-    copy.innerHTML='<small>Phoenix Pulse</small><h3>Un départ très actif. La récupération devient la priorité.</h3><p>'+f0(D.steps)+' pas et '+f2(D.distanceKm)+' km créent un excellent point zéro. La prochaine victoire sera une nuit régulière et une journée bien hydratée.</p>';
-    const score=document.createElement('div');score.className='lab-pulse-score';score.textContent='0';score.setAttribute('aria-label','Score Phoenix '+D.score+' sur 100');
-    pulse.append(copy,score);
+    pulse.className='lab-pulse';
+    pulse.innerHTML=`<div><small>Phoenix Pulse</small><h3>Un départ très actif. La récupération devient la priorité.</h3><p>${number0(latest.steps)} pas et ${number2(latest.distanceKm)} km créent un excellent point zéro. La prochaine victoire sera une nuit régulière et une journée bien hydratée.</p></div><div class="lab-pulse-score" aria-label="Score Phoenix ${latest.score||0} sur 100">${latest.score||0}</div>`;
     hero.insertAdjacentElement('afterend',pulse);
 
-    const focus=document.createElement('div');focus.className='lab-focus lab-reveal';
-    const activityGoal=14000,sleepGoal=7;
-    const activityPct=clamp(D.steps/activityGoal*100,0,100),sleepPct=clamp(D.sleepHours/sleepGoal*100,0,100);
-    const current=D.weightKg,start=H.profile.startWeightKg,firstTarget=110;
-    const weightPct=clamp((start-current)/(start-firstTarget)*100,0,100);
-    focus.innerHTML='<article><span>Objectif activité</span><b>'+f0(activityGoal)+' pas · '+(D.steps>=activityGoal?'dépassé':'en cours')+'</b><i style="width:'+activityPct+'%"></i></article><article><span>Sommeil cible</span><b>'+f0(sleepGoal)+' h · '+(D.sleepHours>=sleepGoal?'atteint':'à consolider')+'</b><i style="width:'+sleepPct+'%"></i></article><article><span>Premier palier</span><b>'+firstTarget+' kg</b><i style="width:'+weightPct+'%"></i></article>';
+    const focus=document.createElement('div');
+    focus.className='lab-focus';
+    const activityGoal=14000;
+    const sleepGoal=7;
+    const firstTarget=110;
+    const start=phoenix.profile?.startWeightKg||latest.weightKg||115;
+    focus.innerHTML=`
+      <article><span>Objectif activité</span><b>${number0(activityGoal)} pas · ${(latest.steps||0)>=activityGoal?'dépassé':'en cours'}</b><i style="width:${clamp((latest.steps||0)/activityGoal*100,0,100)}%"></i></article>
+      <article><span>Sommeil cible</span><b>${sleepGoal} h · ${(latest.sleepHours||0)>=sleepGoal?'atteint':'à consolider'}</b><i style="width:${clamp((latest.sleepHours||0)/sleepGoal*100,0,100)}%"></i></article>
+      <article><span>Premier palier</span><b>${firstTarget} kg</b><i style="width:${clamp((start-(latest.weightKg||start))/(start-firstTarget)*100,0,100)}%"></i></article>`;
     pulse.insertAdjacentElement('afterend',focus);
-    setTimeout(()=>animateNumber(score,D.score),150);
-  }
-
-  function personalizeAuren(){
-    const card=document.querySelector('.phoenixCard');
-    if(!card||card.querySelector('.auren-profile'))return;
-    const walker=document.createTreeWalker(card,NodeFilter.SHOW_TEXT);
-    const nodes=[];while(walker.nextNode())nodes.push(walker.currentNode);
-    nodes.forEach(node=>{const value=node.nodeValue||'';if(value.includes('Phoenix IA'))node.nodeValue=value.replace(/Phoenix IA/g,'Auren')});
-    const img=card.querySelector(':scope>img');
-    if(!img)return;
-    const profile=document.createElement('div');profile.className='auren-profile';
-    profile.innerHTML='<span class="auren-role">Ton guide du challenge</span><h2>Auren</h2><p>Je suis Auren, ton compagnon de route dans Projet Phoenix. Je transforme tes données en repères clairs, je veille sur ta progression et je t’aide à avancer chaque jour avec honnêteté, bienveillance et motivation.</p>';
-    let sibling=img.nextElementSibling;
-    while(sibling){const next=sibling.nextElementSibling;if(/guide du challenge|phoenix ia|données claires|progression honnête|motivation quotidienne/i.test(sibling.textContent||''))sibling.remove();sibling=next}
-    img.insertAdjacentElement('afterend',profile);
-  }
-
-  function enhanceTopics(){
-    document.querySelectorAll('.lab-topic-avatar,.phoenixCard>img').forEach(node=>node.remove());
-    document.querySelectorAll('.topic').forEach(card=>card.classList.add('lab-reveal'));
   }
 
   function yearMap(){
-    const map=document.createElement('div');map.className='lab-year-map';map.setAttribute('role','img');map.setAttribute('aria-label',H.project.day+' jour suivi sur '+H.project.totalDays);
-    for(let i=1;i<=H.project.totalDays;i++){
-      const cell=document.createElement('i');cell.className='lab-day'+(i<=H.project.day?' is-done':'')+(i===H.project.day?' is-today':'');cell.title='Jour '+i;map.append(cell);
+    const total=phoenix.project?.totalDays||365;
+    const current=phoenix.project?.day||1;
+    const map=document.createElement('div');
+    map.className='lab-year-map';
+    map.setAttribute('role','img');
+    map.setAttribute('aria-label',`${current} jour suivi sur ${total}`);
+    for(let day=1;day<=total;day++){
+      const cell=document.createElement('i');
+      cell.className=`lab-day${day<=current?' is-done':''}${day===current?' is-today':''}`;
+      cell.title=`Jour ${day}`;
+      map.append(cell);
     }
     return map;
   }
 
-  function milestonesHtml(){
-    const start=H.profile.startWeightKg,current=D.weightKg,targets=[110,105,100,90,80];
-    return targets.map(target=>{
-      const pct=clamp((start-current)/(start-target)*100,0,100);
-      const status=current<=target?'Atteint':Math.max(0,current-target).toLocaleString('fr-FR',{maximumFractionDigits:1})+' kg';
-      return '<div class="lab-milestone"><strong>'+target+' kg</strong><div class="lab-milestone-track"><i style="width:'+pct+'%"></i></div><small>'+status+'</small></div>';
+  function milestoneRows(){
+    const start=phoenix.profile?.startWeightKg||latest.weightKg||115;
+    const current=latest.weightKg||start;
+    return [110,105,100,90,80].map(target=>{
+      const percentage=clamp((start-current)/(start-target)*100,0,100);
+      const status=current<=target?'Atteint':`${number1(Math.max(0,current-target))} kg`;
+      return `<div class="lab-milestone"><strong>${target} kg</strong><div class="lab-milestone-track"><i style="width:${percentage}%"></i></div><small>${status}</small></div>`;
     }).join('');
-  }
-
-  function trophyHtml(){
-    const items=[['🔥','Jour 1','Challenge officiellement lancé'],['⚖️','Pesée officielle',f1(D.weightKg)+' kg enregistrés'],['👟','10 000 pas',f0(D.steps)+' pas'],['🗺️','Premier 10 km',f2(D.distanceKm)+' km au total']];
-    return items.slice(0,D.trophiesUnlocked||0).map(x=>'<article class="lab-trophy"><div class="lab-trophy-icon">'+x[0]+'</div><b>'+x[1]+'</b><span>'+x[2]+'</span></article>').join('');
   }
 
   function buildCommandCenter(){
     if(document.querySelector('#lab-command-center'))return;
     const anchor=document.querySelector('#synthese')||document.querySelector('.section');
     if(!anchor)return;
-    const section=document.createElement('section');section.id='lab-command-center';section.className='lab-command lab-reveal';
-    section.innerHTML='<header class="lab-command-head"><div><span class="lab-kicker">Centre de progression</span><h2>Une vision claire des 365 jours</h2><p>Le quotidien reste simple. Les tendances, les paliers et l’histoire s’enrichissent automatiquement avec chaque journée officielle.</p></div><div class="lab-day-badge">Jour '+H.project.day+' / '+H.project.totalDays+'</div></header>';
-    const grid=document.createElement('div');grid.className='lab-command-grid';
-    const calendar=document.createElement('article');calendar.className='lab-panel';calendar.innerHTML='<div class="lab-panel-head"><h3>Calendrier de régularité</h3><span>'+H.project.day+' journée suivie</span></div>';calendar.append(yearMap());calendar.insertAdjacentHTML('beforeend','<div class="lab-year-legend"><span>'+H.project.start.split('-').reverse().join('/')+'</span><span>'+H.project.end.split('-').reverse().join('/')+'</span></div>');
-    const story=document.createElement('article');story.className='lab-panel';const storyRow=document.createElement('div');storyRow.className='lab-story';const storyCopy=document.createElement('div');storyCopy.innerHTML='<span class="lab-kicker">Chapitre actuel</span><h3>'+D.journalTitle+'</h3><p>'+D.journalText+'</p>';storyRow.append(storyCopy);story.append(storyRow);story.insertAdjacentHTML('beforeend','<div class="lab-milestones">'+milestonesHtml()+'</div>');
-    grid.append(calendar,story);section.append(grid);
 
-    const insights=document.createElement('div');insights.className='lab-insights';
-    const insightData=[
-      ['activite','Charge du jour',f0(D.steps)+' pas','Une activité très élevée dès le lancement. La récupération compte autant que le volume.'],
-      ['sommeil','Récupération',hm(D.sleepHours),'Durée correcte pour le point zéro. La tendance deviendra utile après plusieurs nuits.'],
-      ['sante','Signaux corporels',f0(D.restingHR)+' bpm','La fréquence au repos et la HRV seront interprétées comme des tendances, jamais comme un diagnostic.']
-    ];
-    insightData.forEach(([,title,value,body])=>{const card=document.createElement('article');card.className='lab-insight';const top=document.createElement('div');top.className='lab-insight-top';const val=document.createElement('strong');val.className='lab-insight-value';val.textContent=value;top.append(val);card.append(top);card.insertAdjacentHTML('beforeend','<h3>'+title+'</h3><p>'+body+'</p>');insights.append(card)});
+    const section=document.createElement('section');
+    section.id='lab-command-center';
+    section.className='lab-command';
+    section.innerHTML=`<header class="lab-command-head"><div><span class="lab-kicker">Centre de progression</span><h2>Une vision claire des 365 jours</h2><p>Le quotidien reste simple. Les tendances, les paliers et l’histoire s’enrichissent à chaque journée officielle.</p></div><div class="lab-day-badge">Jour ${phoenix.project?.day||1} / ${phoenix.project?.totalDays||365}</div></header>`;
+
+    const grid=document.createElement('div');
+    grid.className='lab-command-grid';
+    const calendar=document.createElement('article');
+    calendar.className='lab-panel';
+    calendar.innerHTML=`<div class="lab-panel-head"><h3>Calendrier de régularité</h3><span>${phoenix.project?.day||1} journée suivie</span></div>`;
+    calendar.append(yearMap());
+    calendar.insertAdjacentHTML('beforeend',`<div class="lab-year-legend"><span>${(phoenix.project?.start||'2026-07-29').split('-').reverse().join('/')}</span><span>${(phoenix.project?.end||'2027-07-28').split('-').reverse().join('/')}</span></div>`);
+
+    const story=document.createElement('article');
+    story.className='lab-panel';
+    story.innerHTML=`<div class="lab-story"><div><span class="lab-kicker">Chapitre actuel</span><h3>${latest.journalTitle||'Le départ'}</h3><p>${latest.journalText||'Le premier chapitre de Project Phoenix est lancé.'}</p></div></div><div class="lab-milestones">${milestoneRows()}</div>`;
+    grid.append(calendar,story);
+    section.append(grid);
+
+    const insights=document.createElement('div');
+    insights.className='lab-insights';
+    [
+      ['Charge du jour',`${number0(latest.steps)} pas`,'Une activité très élevée dès le lancement. La récupération compte autant que le volume.'],
+      ['Récupération',sleepText(latest.sleepHours),'La durée est correcte pour le point zéro. La tendance deviendra utile après plusieurs nuits.'],
+      ['Signaux corporels',`${number0(latest.restingHR)} bpm`,'Les indicateurs cardiaques sont présentés comme des tendances, jamais comme un diagnostic.']
+    ].forEach(([title,value,text])=>{
+      const card=document.createElement('article');
+      card.className='lab-insight';
+      card.innerHTML=`<div class="lab-insight-top"><strong class="lab-insight-value">${value}</strong></div><h3>${title}</h3><p>${text}</p>`;
+      insights.append(card);
+    });
     section.append(insights);
-    const trophies=document.createElement('div');trophies.className='lab-panel';trophies.style.marginTop='16px';trophies.innerHTML='<div class="lab-panel-head"><h3>Premiers trophées</h3><span>'+(D.trophiesUnlocked||0)+' débloqués</span></div><div class="lab-trophy-strip">'+trophyHtml()+'</div><div class="lab-provenance"><i></i>Données issues du suivi officiel du '+D.date.split('-').reverse().join('/')+' · aucune donnée nutritionnelle inventée</div>';section.append(trophies);
     anchor.parentNode.insertBefore(section,anchor);
   }
 
-  function detailsMessage(key){
-    return {
-      activite:['Charge élevée, récupération prioritaire.','16 617 pas et 130 minutes d’exercice : un départ exceptionnel, à équilibrer avec du repos.'],
-      sommeil:['Durée atteinte, tendance à construire.','7 h 11 est une base correcte. La régularité sur sept nuits donnera une lecture plus fiable.'],
-      nutrition:['Journal encore vide : aucune donnée inventée.','La prochaine étape est de saisir repas, protéines et hydratation avec un niveau de précision réaliste.'],
-      transformation:['Le point zéro est complet.','112,5 kg, 34,1 % de masse grasse et 108,3 cm de tour de taille créent la base officielle.'],
-      sante:['Une valeur ne fait pas une tendance.','La HRV et la fréquence cardiaque doivent être lues sur plusieurs jours, sans diagnostic automatique.'],
-      journal:['Le contexte donne du sens aux chiffres.','La marche, la pesée et le sommeil composent le premier chapitre du challenge.'],
-      trophees:['Quatre jalons déjà débloqués.','Jour 1, pesée officielle, 10 000 pas et premier 10 km lancent la collection.']
-    }[key];
-  }
-
-  function detailContext(key){
-    const sets={
-      activite:[['Pas',f0(D.steps)],['Distance',f2(D.distanceKm)+' km'],['Exercice',f0(D.exerciseMin)+' min']],
-      sommeil:[['Total',hm(D.sleepHours)],['Profond',f0(D.sleepDeepMin)+' min'],['REM',f0(D.sleepRemMin)+' min']],
-      nutrition:[['Calories','En attente'],['Protéines','En attente'],['Repas','En attente']],
-      transformation:[['Poids',f1(D.weightKg)+' kg'],['Masse grasse',f1(D.bodyFatPct)+' %'],['Taille',f1(D.waistCm)+' cm']],
-      sante:[['FC repos',f0(D.restingHR)+' bpm'],['HRV',f1(D.hrvMs)+' ms'],['FC max',f0(D.maxHR)+' bpm']],
-      journal:[['Jour',H.project.day+' / '+H.project.totalDays],['Départ','29/07/2026'],['Score',D.score+' / 100']],
-      trophees:[['Débloqués',f0(D.trophiesUnlocked)],['Série',H.project.day+' jour'],['Prochain palier','7 jours']]
-    };
-    return (sets[key]||sets.activite).map(x=>'<div><span>'+x[0]+'</span><b>'+x[1]+'</b></div>').join('');
-  }
-
   function enhanceDetails(){
-    const qs=new URLSearchParams(location.search),key=H.topics[qs.get('theme')]?qs.get('theme'):'activite';
-    const hero=document.querySelector('.detailHero');
-    if(hero)hero.querySelectorAll('.lab-detail-avatar').forEach(node=>node.remove());
+    document.querySelectorAll('.lab-detail-avatar,.lab-analysis>img').forEach(node=>node.remove());
+    const params=new URLSearchParams(location.search);
+    const key=params.get('theme')||'activite';
+    const messages={
+      activite:['Charge élevée, récupération prioritaire.','Le départ est exceptionnel. La prochaine étape consiste à rendre ce volume soutenable.'],
+      sommeil:['Durée atteinte, tendance à construire.','Une seule nuit donne un point de départ ; la régularité donnera la vraie lecture.'],
+      nutrition:['Aucune donnée nutritionnelle inventée.','Le journal s’enrichira uniquement avec des repas réellement consignés.'],
+      transformation:['Le point zéro est posé.','Le poids, les mensurations et les photos permettront de voir la progression complète.'],
+      sante:['Une valeur ne fait pas une tendance.','Les données de santé restent des repères de suivi et non un diagnostic.'],
+      journal:['Le contexte donne du sens aux chiffres.','Chaque journée raconte les choix, les difficultés et les victoires.'],
+      trophees:['Chaque étape compte.','Les trophées transforment les habitudes régulières en jalons visibles.']
+    };
     const section=document.querySelector('.section');
     if(section&&!section.querySelector('.lab-analysis')){
-      const m=detailsMessage(key),note=document.createElement('div');note.className='lab-analysis lab-reveal';const copy=document.createElement('div');copy.innerHTML='<small>Phoenix analyse</small><h3>'+m[0]+'</h3><p>'+m[1]+'</p>';note.append(copy);section.prepend(note);
-      const filters=section.querySelector('.filters');if(filters){const context=document.createElement('div');context.className='lab-context lab-reveal';context.innerHTML=detailContext(key);filters.insertAdjacentElement('afterend',context)}
+      const message=messages[key]||messages.activite;
+      const note=document.createElement('div');
+      note.className='lab-analysis';
+      note.innerHTML=`<div><small>Phoenix analyse</small><h3>${message[0]}</h3><p>${message[1]}</p></div>`;
+      section.prepend(note);
     }
   }
 
-  // Conserver les icônes et la disposition de la navigation officielle.
-  if(location.pathname.endsWith('details.html'))enhanceDetails();else{enhanceTopics();personalizeAuren();buildPulse();buildCommandCenter()}
-  observeReveals();
+  injectPremiumLayout();
+  keepOnlyMainAvatar();
+
+  if(location.pathname.endsWith('details.html')){
+    enhanceDetails();
+  }else{
+    personalizeAuren();
+    buildPulse();
+    buildCommandCenter();
+  }
+
+  revealOnScroll();
 })();
