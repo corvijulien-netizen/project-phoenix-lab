@@ -55,7 +55,6 @@
     if(!hero||document.querySelector('.lab-pulse'))return;
     const pulse=document.createElement('section');
     pulse.className='lab-pulse lab-reveal';
-    pulse.append(safeImg('sante','Phoenix Santé',false));
     const copy=document.createElement('div');
     copy.innerHTML='<small>Phoenix Pulse</small><h3>Un départ très actif. La récupération devient la priorité.</h3><p>'+f0(D.steps)+' pas et '+f2(D.distanceKm)+' km créent un excellent point zéro. La prochaine victoire sera une nuit régulière et une journée bien hydratée.</p>';
     const score=document.createElement('div');score.className='lab-pulse-score';score.textContent='0';score.setAttribute('aria-label','Score Phoenix '+D.score+' sur 100');
@@ -88,16 +87,8 @@
   }
 
   function enhanceTopics(){
-    document.querySelectorAll('.topic').forEach(card=>{
-      if(card.querySelector('.lab-topic-avatar'))return;
-      const hit=classMap.find(([cls])=>card.classList.contains(cls));
-      if(!hit)return;
-      const box=document.createElement('div');box.className='lab-topic-avatar';
-      box.append(safeImg(hit[1],'Phoenix '+H.topics[hit[1]].title));
-      card.prepend(box);card.classList.add('lab-reveal');
-    });
-    const heroImg=document.querySelector('.phoenixCard>img');
-    if(heroImg){heroImg.src=A.main;heroImg.onerror=()=>{heroImg.src=cfg.officialBase+'phoenix.svg'}}
+    document.querySelectorAll('.lab-topic-avatar,.phoenixCard>img').forEach(node=>node.remove());
+    document.querySelectorAll('.topic').forEach(card=>card.classList.add('lab-reveal'));
   }
 
   function yearMap(){
@@ -130,7 +121,7 @@
     section.innerHTML='<header class="lab-command-head"><div><span class="lab-kicker">Centre de progression</span><h2>Une vision claire des 365 jours</h2><p>Le quotidien reste simple. Les tendances, les paliers et l’histoire s’enrichissent automatiquement avec chaque journée officielle.</p></div><div class="lab-day-badge">Jour '+H.project.day+' / '+H.project.totalDays+'</div></header>';
     const grid=document.createElement('div');grid.className='lab-command-grid';
     const calendar=document.createElement('article');calendar.className='lab-panel';calendar.innerHTML='<div class="lab-panel-head"><h3>Calendrier de régularité</h3><span>'+H.project.day+' journée suivie</span></div>';calendar.append(yearMap());calendar.insertAdjacentHTML('beforeend','<div class="lab-year-legend"><span>'+H.project.start.split('-').reverse().join('/')+'</span><span>'+H.project.end.split('-').reverse().join('/')+'</span></div>');
-    const story=document.createElement('article');story.className='lab-panel';const storyRow=document.createElement('div');storyRow.className='lab-story';storyRow.append(safeImg('journal','Phoenix Journal'));const storyCopy=document.createElement('div');storyCopy.innerHTML='<span class="lab-kicker">Chapitre actuel</span><h3>'+D.journalTitle+'</h3><p>'+D.journalText+'</p>';storyRow.append(storyCopy);story.append(storyRow);story.insertAdjacentHTML('beforeend','<div class="lab-milestones">'+milestonesHtml()+'</div>');
+    const story=document.createElement('article');story.className='lab-panel';const storyRow=document.createElement('div');storyRow.className='lab-story';const storyCopy=document.createElement('div');storyCopy.innerHTML='<span class="lab-kicker">Chapitre actuel</span><h3>'+D.journalTitle+'</h3><p>'+D.journalText+'</p>';storyRow.append(storyCopy);story.append(storyRow);story.insertAdjacentHTML('beforeend','<div class="lab-milestones">'+milestonesHtml()+'</div>');
     grid.append(calendar,story);section.append(grid);
 
     const insights=document.createElement('div');insights.className='lab-insights';
@@ -139,7 +130,7 @@
       ['sommeil','Récupération',hm(D.sleepHours),'Durée correcte pour le point zéro. La tendance deviendra utile après plusieurs nuits.'],
       ['sante','Signaux corporels',f0(D.restingHR)+' bpm','La fréquence au repos et la HRV seront interprétées comme des tendances, jamais comme un diagnostic.']
     ];
-    insightData.forEach(([key,title,value,body])=>{const card=document.createElement('article');card.className='lab-insight';const top=document.createElement('div');top.className='lab-insight-top';top.append(safeImg(key,'',true));const val=document.createElement('strong');val.className='lab-insight-value';val.textContent=value;top.append(val);card.append(top);card.insertAdjacentHTML('beforeend','<h3>'+title+'</h3><p>'+body+'</p>');insights.append(card)});
+    insightData.forEach(([,title,value,body])=>{const card=document.createElement('article');card.className='lab-insight';const top=document.createElement('div');top.className='lab-insight-top';const val=document.createElement('strong');val.className='lab-insight-value';val.textContent=value;top.append(val);card.append(top);card.insertAdjacentHTML('beforeend','<h3>'+title+'</h3><p>'+body+'</p>');insights.append(card)});
     section.append(insights);
     const trophies=document.createElement('div');trophies.className='lab-panel';trophies.style.marginTop='16px';trophies.innerHTML='<div class="lab-panel-head"><h3>Premiers trophées</h3><span>'+(D.trophiesUnlocked||0)+' débloqués</span></div><div class="lab-trophy-strip">'+trophyHtml()+'</div><div class="lab-provenance"><i></i>Données issues du suivi officiel du '+D.date.split('-').reverse().join('/')+' · aucune donnée nutritionnelle inventée</div>';section.append(trophies);
     anchor.parentNode.insertBefore(section,anchor);
@@ -173,10 +164,10 @@
   function enhanceDetails(){
     const qs=new URLSearchParams(location.search),key=H.topics[qs.get('theme')]?qs.get('theme'):'activite';
     const hero=document.querySelector('.detailHero');
-    if(hero&&!hero.querySelector('.lab-detail-avatar')){const box=document.createElement('div');box.className='lab-detail-avatar';box.append(safeImg(key,'Phoenix '+H.topics[key].title,false));hero.append(box)}
+    if(hero)hero.querySelectorAll('.lab-detail-avatar').forEach(node=>node.remove());
     const section=document.querySelector('.section');
     if(section&&!section.querySelector('.lab-analysis')){
-      const m=detailsMessage(key),note=document.createElement('div');note.className='lab-analysis lab-reveal';note.append(safeImg(key,'',true));const copy=document.createElement('div');copy.innerHTML='<small>Phoenix analyse</small><h3>'+m[0]+'</h3><p>'+m[1]+'</p>';note.append(copy);section.prepend(note);
+      const m=detailsMessage(key),note=document.createElement('div');note.className='lab-analysis lab-reveal';const copy=document.createElement('div');copy.innerHTML='<small>Phoenix analyse</small><h3>'+m[0]+'</h3><p>'+m[1]+'</p>';note.append(copy);section.prepend(note);
       const filters=section.querySelector('.filters');if(filters){const context=document.createElement('div');context.className='lab-context lab-reveal';context.innerHTML=detailContext(key);filters.insertAdjacentElement('afterend',context)}
     }
   }
