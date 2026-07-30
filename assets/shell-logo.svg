@@ -18,7 +18,8 @@
     <filter id="patina" x="-12%" y="-12%" width="124%" height="124%">
       <feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="3" seed="12" result="noise"/>
       <feColorMatrix in="noise" type="saturate" values="0" result="mono"/>
-      <feBlend in="SourceGraphic" in2="mono" mode="soft-light" result="textured"/>
+      <feComposite in="mono" in2="SourceAlpha" operator="in" result="clippedNoise"/>
+      <feBlend in="SourceGraphic" in2="clippedNoise" mode="soft-light" result="textured"/>
       <feDropShadow dx="0" dy="9" stdDeviation="8" flood-color="#382006" flood-opacity=".32"/>
     </filter>
     <clipPath id="shellClip">
